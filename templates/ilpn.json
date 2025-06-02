@@ -1,0 +1,19 @@
+{
+    "IlpnId": "{{lpn2}}",
+    "IlpnTypeId": "ILPN",
+    "FinalDestinationFacilityId": null,
+    "CurrentLocationId": null,
+    "CurrentLocationTypeId": null,
+    "AsnId":"{{asn1}}",
+    "PurchaseOrderId":"{{po1}}",
+    "Inventory": [
+        {
+            "InventoryContainerId": "{{lpn2}}",
+            "InventoryContainerTypeId": "ILPN",
+            "OnHand": 2,
+            "LocationId": "A-E-S-0-0-1",
+            "ItemId": "{{item1}}"
+        }
+    ],
+    "Status": "3000"
+}

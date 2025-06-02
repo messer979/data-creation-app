@@ -1,0 +1,65 @@
+{
+    "StaticFields": {
+        "AsnLevelId": "LPN",
+        "AsnOriginTypeId": "P",
+        "VerificationAttempted": false,
+        "Canceled": false,
+        "AsnStatus": "1000",
+        "Lpn.0.LpnStatus": "1000",
+        "Lpn.0.LpnTypeId": "ILPN",
+        "Lpn.0.ItemAttributesValidated": true,
+        "Lpn.0.SingleItemLpn": true,
+        "Lpn.0.Canceled": false,
+        "Lpn.0.LpnDetail.0.QuantityUomId": "Unit",
+        "Lpn.0.LpnDetail.0.LpnDetailStatus": "1000"
+    },
+    "DynamicFields": {
+        "AsnId": "CM_ASN_LPN",
+        "Lpn.0.LpnId": "CM_LPN"
+    },
+    "RandomFields": [
+        {
+            "FieldName": "DestinationFacilityId",
+            "FieldType": "choice(MANH-DEV-L2,CM_STORE_000001,CM_STORE_000002,CM_STORE_000003)"
+        },
+        {
+            "FieldName": "EstimatedWeight",
+            "FieldType": "float(1,50)"
+        },
+        {
+            "FieldName": "PreDeterminedLpnCount",
+            "FieldType": "int(10,200)"
+        },
+        {
+            "FieldName": "EstimatedVolume",
+            "FieldType": "float(0.1,10)"
+        },
+        {
+            "FieldName": "EstimatedReceiptDate",
+            "FieldType": "datetime(future)"
+        },
+        {
+            "FieldName": "EstimatedDeliveryDate",
+            "FieldType": "datetime(future)"
+        },
+        {
+            "FieldName": "ShipmentAsnAssociation.0.ShipmentId",
+            "FieldType": "string(10)"
+        },
+        {
+            "FieldName": "Lpn.0.LpnDetail.0.LpnDetailId",
+            "FieldType": "uuid"
+        },
+        {
+            "FieldName": "Lpn.0.LpnDetail.0.ItemId",
+            "FieldType": "string(12)"
+        },
+        {
+            "FieldName": "Lpn.0.LpnDetail.0.ShippedQuantity",
+            "FieldType": "int(10,500)"
+        }
+    ],
+    "LinkedFields": {
+        "AsnId": ["ShipmentAsnAssociation.0.AsnId"]
+    }
+}

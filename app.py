@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""
+Data Creation Web Application
+Generates massive amounts of test data using JSON templates via API calls
+Built with Streamlit for a modern, interactive interface
+
+Refactored version with separated concerns:
+- UI components in ui_components.py
+- Data operations in data_operations.py  
+- API operations in api_operations.py
+- Configuration in config.py
+"""
+
+import streamlit as st
+from data_generator import DataGenerator
+from config import PAGE_CONFIG
+from config_manager import ConfigurationManager
+from ui_components import (
+    render_sidebar, 
+    render_template_selection, 
+    render_count_input,
+    render_api_options,
+    render_results_panel,
+    render_template_editor
+)
+from data_operations import handle_generate_button_click
+from endpoint_config_ui import render_endpoint_configuration_sidebar
+from streamlit_theme import st_theme
+
+# Page configuration
+st.set_page_config(**PAGE_CONFIG)
+
+dev_config_file = 'user_config.json'
+# Initialize session state
+if 'data_gen' not in st.session_state:
+    st.session_state.data_gen = DataGenerator()
+
+if 'config_manager' not in st.session_state:
+    st.session_state.config_manager = ConfigurationManager()
+
+
+def main():
+    """Main Streamlit application with separated concerns"""
+    # Title and description
+    st.title("🚀 Data Creation Tool")
+    st.markdown("Generate massive amounts of test data using JSON templates and send via API calls")
+    theme = st_theme()
+
+    try:
+        # theme = st_theme()
+        if theme['base'] == 'dark':
+            st.session_state.ace_theme = "nord_dark"
+        else:
+            st.session_state.ace_theme = "github"
+    except TypeError:
+        st.session_state.ace_theme = "github"
+
+    # Render sidebar configuration
+    render_sidebar(
+        st.session_state.config_manager
+    )
+    
+    # Main content area (single column layout)
+    # Template selection
+    template_options = list(st.session_state.data_gen.templates.keys())
+    selected_template = render_template_selection(template_options)
+    
+    if not selected_template:
+        return  # Exit if no templates available
+    
+    # Generation Template Editor
+    st.markdown("---")
+    template_editor_result = render_template_editor(
+        st.session_state.data_gen,
+        selected_template
+    )
+    
+    st.markdown("---")
+    
+    # Count input
+    count = render_count_input()
+    
+    # API options
+    send_to_api, batch_size = render_api_options()
+    
+    # Generate button with separated logic
+    if st.button("🚀 Generate Data", type="primary"):
+        # Check if template editor has valid results
+        if not template_editor_result.get('is_valid', True):
+            st.error("❌ Please fix the JSON template before generating data.")
+            return
+        
+        success = handle_generate_button_click(
+            selected_template=selected_template,
+            count=count,
+            template_params={},  # Empty dict since we removed template options
+            send_to_api=send_to_api,
+            config_manager=st.session_state.config_manager,
+            batch_size=batch_size,
+            template_editor_result=template_editor_result
+        )
+        
+        if success:
+            st.rerun()  # Refresh to show results
+    
+    # Results panel at the bottom
+    st.markdown("---")
+    render_results_panel()
+    
+    # Footer
+    st.markdown("---")
+    st.markdown("Built with Streamlit • Modular Architecture • Template-Specific Endpoints")
+
+
+if __name__ == "__main__":
+    main()

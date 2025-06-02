@@ -1,0 +1,61 @@
+{
+    "StaticFields": {
+        "PurchaseOrderStatus": "2000",
+        "Closed": false,
+        "Canceled": false,
+        "PurchaseOrderLine.0.QuantityUomId": "Unit",
+        "PurchaseOrderLine.0.Closed": false,
+        "PurchaseOrderLine.0.Canceled": false,
+        "PurchaseOrderLine.1.QuantityUomId": "Unit",
+        "PurchaseOrderLine.1.Closed": false,
+        "PurchaseOrderLine.1.Canceled": false
+    },
+    "DynamicFields": {
+        "PurchaseOrderId": "CM_PO",
+        "PurchaseOrderLine.0.PurchaseOrderLineId": "LINE",
+        "PurchaseOrderLine.1.PurchaseOrderLineId": "LINE"
+    },
+    "RandomFields": [
+        {
+            "FieldName": "VendorId",
+            "FieldType": "string(8)"
+        },
+        {
+            "FieldName": "OriginFacilityId",
+            "FieldType": "choice(MANH-DEV-L2,CM_STORE_000001,CM_STORE_000002,CM_STORE_000003)"
+        },
+        {
+            "FieldName": "DestinationFacilityId",
+            "FieldType": "choice(MANH-DEV-L2,CM_STORE_000001,CM_STORE_000002,CM_STORE_000003)"
+        },
+        {
+            "FieldName": "PurchaseOrderLine.0.ItemId",
+            "FieldType": "string(12)"
+        },
+        {
+            "FieldName": "PurchaseOrderLine.0.OrderQuantity",
+            "FieldType": "int(10,500)"
+        },
+        {
+            "FieldName": "PurchaseOrderLine.0.ShippedQuantity",
+            "FieldType": "int(10,500)"
+        },
+        {
+            "FieldName": "PurchaseOrderLine.1.ItemId",
+            "FieldType": "string(12)"
+        },
+        {
+            "FieldName": "PurchaseOrderLine.1.OrderQuantity",
+            "FieldType": "int(10,500)"
+        },
+        {
+            "FieldName": "PurchaseOrderLine.1.ShippedQuantity",
+            "FieldType": "int(10,500)"
+        }
+    ],
+    "LinkedFields": {
+        "PurchaseOrderId": ["PurchaseOrderLine.0.PurchaseOrderId", "PurchaseOrderLine.1.PurchaseOrderId"],
+        "PurchaseOrderLine.0.OrderQuantity": ["PurchaseOrderLine.0.UnShippedQuantity"],
+        "PurchaseOrderLine.1.OrderQuantity": ["PurchaseOrderLine.1.UnShippedQuantity"]
+    }
+}
