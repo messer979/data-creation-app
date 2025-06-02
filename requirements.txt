@@ -3,3 +3,5 @@ requests==2.31.0
 faker==19.12.0
 pandas==2.1.3
 python-dateutil==2.8.2
+streamlit_ace
+streamlit-theme
