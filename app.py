@@ -25,7 +25,6 @@ from ui_components import (
 )
 from data_operations import handle_generate_button_click
 from endpoint_config_ui import render_endpoint_configuration_sidebar
-from streamlit_theme import st_theme
 
 # Page configuration
 st.set_page_config(**PAGE_CONFIG)
@@ -44,7 +43,7 @@ def main():
     # Title and description
     st.title("🚀 Data Creation Tool")
     st.markdown("Generate massive amounts of test data using JSON templates and send via API calls")
-    theme = st_theme()
+    theme = st.get_option("theme.base")
 
     try:
         # theme = st_theme()
