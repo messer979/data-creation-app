@@ -149,7 +149,6 @@ def render_endpoint_configuration_sidebar(config_manager: ConfigurationManager):
                             import_success = config_manager.import_full_config(config_content)
                         
                         if import_success:
-                            st.success("Configuration imported successfully!")
                             # Mark this file as processed
                             st.session_state.last_processed_file = uploaded_file.file_id
                             st.session_state.uploading = False
@@ -164,7 +163,7 @@ def render_endpoint_configuration_sidebar(config_manager: ConfigurationManager):
                         st.error(f"Error reading file: {e}")
                 else:
                     # File already processed, show status
-                    st.success("✅ Configuration file already imported")
+                    st.success("Configuration imported successfully!")
 
 
 def render_template_endpoint_config(config_manager: ConfigurationManager, template_name: str):

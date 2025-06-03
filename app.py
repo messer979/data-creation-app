@@ -44,10 +44,10 @@ def main():
     st.title("🚀 Data Creation Tool")
     st.markdown("Generate massive amounts of test data using JSON templates and send via API calls")
     theme = st.get_option("theme.base")
-
+    print(theme)
     try:
         # theme = st_theme()
-        if theme['base'] == 'dark':
+        if theme == 'dark':
             st.session_state.ace_theme = "nord_dark"
         else:
             st.session_state.ace_theme = "github"
