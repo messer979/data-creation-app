@@ -217,7 +217,7 @@ def generate_random_value(field_type: str) -> Any:
         # datetime(now), datetime(past), datetime(future) - with whitespace handling
         match = re.match(r'datetime\(\s*(\w+)\s*\)', field_type)
         if match:
-            time_type = match.group(1)            
+            time_type = match.group(1)
             if time_type == 'now':
                 return datetime.now().isoformat()
             elif time_type == 'past':
@@ -280,6 +280,68 @@ def deep_copy_template(obj: Any) -> Any:
         return obj
 
 
+def expand_nested_array(record: Dict[str, Any], array_path: str, array_length: int) -> None:
+    """
+    Expand a nested array (e.g., Lpn.LpnDetail) to the specified length.
+    Supports up to 4 levels of nesting.
+    
+    Args:
+        record: The record to modify
+        array_path: The path to the nested array (e.g., "Lpn.LpnDetail")
+        array_length: The desired length of the array
+    """
+    path_parts = array_path.split('.')
+    
+    def expand_at_path(current_obj, parts_remaining, depth=0):
+        if depth > 4:  # Safety limit
+            return
+            
+        if len(parts_remaining) == 1:
+            # We've reached the final array to expand
+            final_array_name = parts_remaining[0]
+            
+            if isinstance(current_obj, dict):
+                if final_array_name in current_obj and isinstance(current_obj[final_array_name], list):
+                    # Expand existing array
+                    current_array = current_obj[final_array_name]
+                    current_length = len(current_array)
+                    if current_length < array_length:
+                        # Use the first element as a template for new elements
+                        template_element = current_array[0] if current_length > 0 else {}
+                        for i in range(current_length, array_length):
+                            current_array.append(deep_copy_template(template_element))
+                    elif current_length > array_length:
+                        # Truncate array if it's longer than needed
+                        current_obj[final_array_name] = current_array[:array_length]
+                elif final_array_name not in current_obj:
+                    # Create new array with empty objects
+                    current_obj[final_array_name] = [{} for _ in range(array_length)]
+            elif isinstance(current_obj, list):
+                # Current object is an array, expand the target array in each element
+                for element in current_obj:
+                    if isinstance(element, dict):
+                        expand_at_path(element, parts_remaining, depth + 1)
+            return
+        
+        # Navigate to the next level
+        next_part = parts_remaining[0]
+        remaining_parts = parts_remaining[1:]
+        
+        if isinstance(current_obj, dict) and next_part in current_obj:
+            current_level = current_obj[next_part]
+            if isinstance(current_level, list):
+                # Current level is an array, expand in each element
+                for element in current_level:
+                    if isinstance(element, dict):
+                        expand_at_path(element, remaining_parts, depth + 1)
+            else:
+                # Current level is a single object
+                expand_at_path(current_level, remaining_parts, depth + 1)
+    
+    # Start expansion from the record
+    expand_at_path(record, path_parts)
+
+
 def create_record_from_template(base_template: Dict[str, Any], 
                               generation_template: Dict[str, Any],
                               index: int,
@@ -300,11 +362,13 @@ def create_record_from_template(base_template: Dict[str, Any],
     
     # Get array lengths configuration
     array_lengths = generation_template.get('ArrayLengths', {})
-    
-    # Initialize arrays to the specified lengths before processing fields
+      # Initialize arrays to the specified lengths before processing fields
     for array_name, array_length in array_lengths.items():
-        if array_name in record and isinstance(record[array_name], list):
-            # Expand existing array
+        if '.' in array_name:
+            # Handle nested arrays (e.g., "Lpn.LpnDetail")
+            expand_nested_array(record, array_name, array_length)
+        elif array_name in record and isinstance(record[array_name], list):
+            # Expand existing top-level array
             current_length = len(record[array_name])
             if current_length < array_length:
                 # Use the first element as a template for new elements
@@ -315,7 +379,7 @@ def create_record_from_template(base_template: Dict[str, Any],
                 # Truncate array if it's longer than needed
                 record[array_name] = record[array_name][:array_length]
         elif array_name not in record:
-            # Create new array with empty objects
+            # Create new top-level array with empty objects
             record[array_name] = [{} for _ in range(array_length)]
     
     # Apply static fields with array handling
@@ -379,11 +443,384 @@ def expand_linked_fields_for_arrays(linked_fields: Dict[str, List[str]], array_l
     return linked_fields
 
 
+def find_array_path_and_suffix(field_path: str, array_lengths: Dict[str, int]) -> tuple[str, str]:
+    """
+    Find the longest matching array path for a field and return the array path and remaining suffix.
+    Supports up to 4 levels of nesting.
+    
+    Args:
+        field_path: The full field path (e.g., "Lpn.LpnDetail.QuantityUomId")
+        array_lengths: Dictionary of array_name -> length mappings
+    
+    Returns:
+        Tuple of (array_path, field_suffix) where array_path is the longest matching array
+        and field_suffix is the remaining path after the array
+    """
+    # Sort array paths by length (longest first) to match the most specific array path
+    sorted_arrays = sorted(array_lengths.keys(), key=len, reverse=True)
+    
+    for array_path in sorted_arrays:
+        if field_path.startswith(f"{array_path}."):
+            field_suffix = field_path[len(array_path) + 1:]  # Remove "ArrayPath." prefix
+            return array_path, field_suffix
+    
+    return None, field_path
+
+
+def apply_to_nested_arrays(record: Dict[str, Any], array_path: str, field_suffix: str, 
+                          value_func, *args) -> None:
+    """
+    Apply a function to nested array elements at the specified path.
+    Supports up to 4 levels of nested arrays.
+    
+    Args:
+        record: The record to modify
+        array_path: The path to the array (e.g., "Lpn.LpnDetail")
+        field_suffix: The field path within each array element
+        value_func: Function to generate/get the value to set
+        *args: Additional arguments to pass to value_func
+    """
+    # Split the array path into parts
+    path_parts = array_path.split('.')
+    
+    def navigate_and_apply(current_obj, parts_remaining, depth=0):
+        if depth > 4:  # Safety limit for recursion
+            return
+            
+        if len(parts_remaining) == 1:
+            # We're at the parent of the final array - navigate to the array itself
+            final_array_name = parts_remaining[0]
+            if isinstance(current_obj, dict) and final_array_name in current_obj:
+                final_array = current_obj[final_array_name]
+                if isinstance(final_array, list):
+                    # Apply to all elements in the final array
+                    for element in final_array:
+                        if isinstance(element, dict):
+                            # Generate a fresh value for each array element
+                            if args:
+                                value = value_func(*args)
+                            else:
+                                value = value_func()
+                            set_nested_field(element, field_suffix, value)
+            elif isinstance(current_obj, list):
+                # Current object is an array, apply to final array in each element
+                for element in current_obj:
+                    if isinstance(element, dict) and final_array_name in element:
+                        final_array = element[final_array_name]
+                        if isinstance(final_array, list):
+                            for sub_element in final_array:
+                                if isinstance(sub_element, dict):
+                                    if args:
+                                        value = value_func(*args)
+                                    else:
+                                        value = value_func()
+                                    set_nested_field(sub_element, field_suffix, value)
+            return
+        
+        # Navigate to the next level (not the final array yet)
+        next_part = parts_remaining[0]
+        remaining_parts = parts_remaining[1:]
+        
+        if isinstance(current_obj, dict) and next_part in current_obj:
+            current_level = current_obj[next_part]
+            if isinstance(current_level, list):
+                # Current level is an array, iterate through its elements
+                for element in current_level:
+                    if isinstance(element, dict):
+                        navigate_and_apply(element, remaining_parts, depth + 1)
+            else:
+                # Current level is a single object
+                navigate_and_apply(current_level, remaining_parts, depth + 1)
+        elif isinstance(current_obj, list):
+            # Current object is already an array, process each element
+            for element in current_obj:
+                if isinstance(element, dict) and next_part in element:
+                    next_level = element[next_part]
+                    if isinstance(next_level, list):
+                        # Navigate into the next array level
+                        for sub_element in next_level:
+                            if isinstance(sub_element, dict):
+                                navigate_and_apply(sub_element, remaining_parts, depth + 1)
+                    else:
+                        navigate_and_apply(next_level, remaining_parts, depth + 1)
+    
+    # Start navigation from the record
+    navigate_and_apply(record, path_parts)
+
+
+def expand_nested_array(record: Dict[str, Any], array_path: str, array_length: int) -> None:
+    """
+    Expand a nested array (e.g., Lpn.LpnDetail) to the specified length.
+    Supports up to 4 levels of nesting.
+    
+    Args:
+        record: The record to modify
+        array_path: The path to the nested array (e.g., "Lpn.LpnDetail")
+        array_length: The desired length of the array
+    """
+    path_parts = array_path.split('.')
+    
+    def expand_at_path(current_obj, parts_remaining, depth=0):
+        if depth > 4:  # Safety limit
+            return
+            
+        if len(parts_remaining) == 1:
+            # We've reached the final array to expand
+            final_array_name = parts_remaining[0]
+            
+            if isinstance(current_obj, dict):
+                if final_array_name in current_obj and isinstance(current_obj[final_array_name], list):
+                    # Expand existing array
+                    current_array = current_obj[final_array_name]
+                    current_length = len(current_array)
+                    if current_length < array_length:
+                        # Use the first element as a template for new elements
+                        template_element = current_array[0] if current_length > 0 else {}
+                        for i in range(current_length, array_length):
+                            current_array.append(deep_copy_template(template_element))
+                    elif current_length > array_length:
+                        # Truncate array if it's longer than needed
+                        current_obj[final_array_name] = current_array[:array_length]
+                elif final_array_name not in current_obj:
+                    # Create new array with empty objects
+                    current_obj[final_array_name] = [{} for _ in range(array_length)]
+            elif isinstance(current_obj, list):
+                # Current object is an array, expand the target array in each element
+                for element in current_obj:
+                    if isinstance(element, dict):
+                        expand_at_path(element, parts_remaining, depth + 1)
+            return
+        
+        # Navigate to the next level
+        next_part = parts_remaining[0]
+        remaining_parts = parts_remaining[1:]
+        
+        if isinstance(current_obj, dict) and next_part in current_obj:
+            current_level = current_obj[next_part]
+            if isinstance(current_level, list):
+                # Current level is an array, expand in each element
+                for element in current_level:
+                    if isinstance(element, dict):
+                        expand_at_path(element, remaining_parts, depth + 1)
+            else:
+                # Current level is a single object
+                expand_at_path(current_level, remaining_parts, depth + 1)
+    
+    # Start expansion from the record
+    expand_at_path(record, path_parts)
+
+
+def create_record_from_template(base_template: Dict[str, Any], 
+                              generation_template: Dict[str, Any],
+                              index: int,
+                              dynamic_counters: Dict[str, int]) -> Dict[str, Any]:
+    """
+    Create a single record by applying generation template rules to base template
+    
+    Args:
+        base_template: Base JSON template structure
+        generation_template: Generation rules template
+        index: Record index (0-based)
+        dynamic_counters: Mutable dictionary tracking dynamic field counters
+    
+    Returns:
+        Generated record
+    """    # Start with a deep copy of the base template
+    record = deep_copy_template(base_template)
+    
+    # Get array lengths configuration
+    array_lengths = generation_template.get('ArrayLengths', {})
+      # Initialize arrays to the specified lengths before processing fields
+    for array_name, array_length in array_lengths.items():
+        if '.' in array_name:
+            # Handle nested arrays (e.g., "Lpn.LpnDetail")
+            expand_nested_array(record, array_name, array_length)
+        elif array_name in record and isinstance(record[array_name], list):
+            # Expand existing top-level array
+            current_length = len(record[array_name])
+            if current_length < array_length:
+                # Use the first element as a template for new elements
+                template_element = record[array_name][0] if current_length > 0 else {}
+                for i in range(current_length, array_length):
+                    record[array_name].append(deep_copy_template(template_element))
+            elif current_length > array_length:
+                # Truncate array if it's longer than needed
+                record[array_name] = record[array_name][:array_length]
+        elif array_name not in record:
+            # Create new top-level array with empty objects
+            record[array_name] = [{} for _ in range(array_length)]
+    
+    # Apply static fields with array handling
+    if 'StaticFields' in generation_template:
+        record = apply_static_fields_with_arrays(record, generation_template['StaticFields'], array_lengths)
+    
+    # Apply dynamic fields with array handling
+    if 'DynamicFields' in generation_template:
+        record = apply_dynamic_fields_with_arrays(record, generation_template['DynamicFields'], dynamic_counters, array_lengths)
+    
+    # Apply random fields with array handling
+    if 'RandomFields' in generation_template:
+        record = apply_random_fields_with_arrays(record, generation_template['RandomFields'], array_lengths)
+    
+    # Apply linked fields with array handling
+    if 'LinkedFields' in generation_template:
+        record = apply_linked_fields_with_arrays(record, generation_template['LinkedFields'], array_lengths)
+    
+    return record
+
+
+def expand_fields_for_arrays(fields: Dict[str, Any], array_lengths: Dict[str, int]) -> Dict[str, Any]:
+    """
+    Since arrays are handled iteratively, just return fields as-is
+    
+    Args:
+        fields: Dictionary of field definitions
+        array_lengths: Dictionary of array_name -> length mappings (not used)
+    
+    Returns:
+        Original fields dictionary unchanged
+    """
+    return fields
+
+
+def expand_random_fields_for_arrays(random_fields: List[Dict[str, str]], array_lengths: Dict[str, int]) -> List[Dict[str, str]]:
+    """
+    Since arrays are handled iteratively, just return random fields as-is
+    
+    Args:
+        random_fields: List of random field specifications
+        array_lengths: Dictionary of array_name -> length mappings (not used)
+    
+    Returns:
+        Original random fields list unchanged
+    """
+    return random_fields
+
+
+def expand_linked_fields_for_arrays(linked_fields: Dict[str, List[str]], array_lengths: Dict[str, int]) -> Dict[str, List[str]]:
+    """
+    Since arrays are handled iteratively, just return linked fields as-is
+    
+    Args:
+        linked_fields: Dictionary of source_field -> [linked_field_names]
+        array_lengths: Dictionary of array_name -> length mappings (not used)
+    
+    Returns:
+        Original linked fields dictionary unchanged
+    """
+    return linked_fields
+
+
+def find_array_path_and_suffix(field_path: str, array_lengths: Dict[str, int]) -> tuple[str, str]:
+    """
+    Find the longest matching array path for a field and return the array path and remaining suffix.
+    Supports up to 4 levels of nesting.
+    
+    Args:
+        field_path: The full field path (e.g., "Lpn.LpnDetail.QuantityUomId")
+        array_lengths: Dictionary of array_name -> length mappings
+    
+    Returns:
+        Tuple of (array_path, field_suffix) where array_path is the longest matching array
+        and field_suffix is the remaining path after the array
+    """
+    # Sort array paths by length (longest first) to match the most specific array path
+    sorted_arrays = sorted(array_lengths.keys(), key=len, reverse=True)
+    
+    for array_path in sorted_arrays:
+        if field_path.startswith(f"{array_path}."):
+            field_suffix = field_path[len(array_path) + 1:]  # Remove "ArrayPath." prefix
+            return array_path, field_suffix
+    
+    return None, field_path
+
+
+def apply_to_nested_arrays(record: Dict[str, Any], array_path: str, field_suffix: str, 
+                          value_func, *args) -> None:
+    """
+    Apply a function to nested array elements at the specified path.
+    Supports up to 4 levels of nested arrays.
+    
+    Args:
+        record: The record to modify
+        array_path: The path to the array (e.g., "Lpn.LpnDetail")
+        field_suffix: The field path within each array element
+        value_func: Function to generate/get the value to set
+        *args: Additional arguments to pass to value_func
+    """
+    # Split the array path into parts
+    path_parts = array_path.split('.')
+    
+    def navigate_and_apply(current_obj, parts_remaining, depth=0):
+        if depth > 4:  # Safety limit for recursion
+            return
+            
+        if len(parts_remaining) == 1:
+            # We're at the parent of the final array - navigate to the array itself
+            final_array_name = parts_remaining[0]
+            if isinstance(current_obj, dict) and final_array_name in current_obj:
+                final_array = current_obj[final_array_name]
+                if isinstance(final_array, list):
+                    # Apply to all elements in the final array
+                    for element in final_array:
+                        if isinstance(element, dict):
+                            # Generate a fresh value for each array element
+                            if args:
+                                value = value_func(*args)
+                            else:
+                                value = value_func()
+                            set_nested_field(element, field_suffix, value)
+            elif isinstance(current_obj, list):
+                # Current object is an array, apply to final array in each element
+                for element in current_obj:
+                    if isinstance(element, dict) and final_array_name in element:
+                        final_array = element[final_array_name]
+                        if isinstance(final_array, list):
+                            for sub_element in final_array:
+                                if isinstance(sub_element, dict):
+                                    if args:
+                                        value = value_func(*args)
+                                    else:
+                                        value = value_func()
+                                    set_nested_field(sub_element, field_suffix, value)
+            return
+        
+        # Navigate to the next level (not the final array yet)
+        next_part = parts_remaining[0]
+        remaining_parts = parts_remaining[1:]
+        
+        if isinstance(current_obj, dict) and next_part in current_obj:
+            current_level = current_obj[next_part]
+            if isinstance(current_level, list):
+                # Current level is an array, iterate through its elements
+                for element in current_level:
+                    if isinstance(element, dict):
+                        navigate_and_apply(element, remaining_parts, depth + 1)
+            else:
+                # Current level is a single object
+                navigate_and_apply(current_level, remaining_parts, depth + 1)
+        elif isinstance(current_obj, list):
+            # Current object is already an array, process each element
+            for element in current_obj:
+                if isinstance(element, dict) and next_part in element:
+                    next_level = element[next_part]
+                    if isinstance(next_level, list):
+                        # Navigate into the next array level
+                        for sub_element in next_level:
+                            if isinstance(sub_element, dict):
+                                navigate_and_apply(sub_element, remaining_parts, depth + 1)
+                    else:
+                        navigate_and_apply(next_level, remaining_parts, depth + 1)
+    
+    # Start navigation from the record
+    navigate_and_apply(record, path_parts)
+
+
 def apply_static_fields_with_arrays(record: Dict[str, Any], 
                                    static_fields: Dict[str, Any], 
                                    array_lengths: Dict[str, int]) -> Dict[str, Any]:
     """
-    Apply static field values to a record, handling array fields by iterating over array elements
+    Apply static field values to a record, handling multi-level array fields by iterating over array elements
     
     Args:
         record: The record to modify
@@ -395,19 +832,12 @@ def apply_static_fields_with_arrays(record: Dict[str, Any],
     """
     for field, value in static_fields.items():
         if '.' in field:
-            # Check if this field references an array
-            array_field = None
-            for array_name in array_lengths.keys():
-                if field.startswith(f"{array_name}."):
-                    array_field = array_name
-                    break
+            # Check if this field references any array (including nested arrays)
+            array_path, field_suffix = find_array_path_and_suffix(field, array_lengths)
             
-            if array_field and array_field in record and isinstance(record[array_field], list):
-                # This is an array field - apply to all array elements
-                field_suffix = field[len(array_field) + 1:]  # Remove "ArrayName." prefix
-                for array_element in record[array_field]:
-                    if isinstance(array_element, dict):
-                        set_nested_field(array_element, field_suffix, value)
+            if array_path:
+                # This is an array field - apply to all nested array elements
+                apply_to_nested_arrays(record, array_path, field_suffix, lambda: value)
             else:
                 # Regular nested field
                 set_nested_field(record, field, value)
@@ -423,7 +853,7 @@ def apply_dynamic_fields_with_arrays(record: Dict[str, Any],
                                    dynamic_counters: Dict[str, int],
                                    array_lengths: Dict[str, int]) -> Dict[str, Any]:
     """
-    Apply dynamic field values to a record, handling array fields by iterating over array elements
+    Apply dynamic field values to a record, handling multi-level array fields by iterating over array elements
     
     Args:
         record: The record to modify
@@ -439,22 +869,17 @@ def apply_dynamic_fields_with_arrays(record: Dict[str, Any],
         processed_prefix = process_dynamic_field_keywords(prefix)
         
         if '.' in field:
-            # Check if this field references an array
-            array_field = None
-            for array_name in array_lengths.keys():
-                if field.startswith(f"{array_name}."):
-                    array_field = array_name
-                    break
+            # Check if this field references any array (including nested arrays)
+            array_path, field_suffix = find_array_path_and_suffix(field, array_lengths)
             
-            if array_field and array_field in record and isinstance(record[array_field], list):
-                # This is an array field - increment per element within this record
-                field_suffix = field[len(array_field) + 1:]  # Remove "ArrayName." prefix
+            if array_path:
+                # This is an array field - apply per-element indexing for nested arrays
+                def generate_dynamic_value_for_element():
+                    # For array elements, use sequential indexing within this record
+                    # We'll track the index during application
+                    return None  # Placeholder, actual value set in apply_to_nested_arrays_with_index
                 
-                for i, array_element in enumerate(record[array_field]):
-                    if isinstance(array_element, dict):
-                        # For array elements, use per-record indexing (1-based)
-                        element_value = f"{processed_prefix}_{i + 1:03d}"
-                        set_nested_field(array_element, field_suffix, element_value)
+                apply_to_nested_arrays_with_index(record, array_path, field_suffix, processed_prefix)
             else:
                 # Regular nested field - use global counter
                 if field not in dynamic_counters:
@@ -477,11 +902,75 @@ def apply_dynamic_fields_with_arrays(record: Dict[str, Any],
     return record
 
 
+def apply_to_nested_arrays_with_index(record: Dict[str, Any], array_path: str, field_suffix: str, 
+                                     prefix: str) -> None:
+    """
+    Apply dynamic values to nested array elements with per-element indexing.
+    Supports up to 4 levels of nested arrays.
+    
+    Args:
+        record: The record to modify
+        array_path: The path to the array (e.g., "Lpn.LpnDetail")
+        field_suffix: The field path within each array element
+        prefix: The prefix for generating dynamic values
+    """
+    # Split the array path into parts
+    path_parts = array_path.split('.')
+    
+    def navigate_and_apply_with_index(current_obj, parts_remaining, depth=0, indices=[]):
+        if depth > 4:  # Safety limit for recursion
+            return
+            
+        if len(parts_remaining) == 1:
+            # We're at the parent of the final array - navigate to the array itself
+            final_array_name = parts_remaining[0]
+            if isinstance(current_obj, dict) and final_array_name in current_obj:
+                final_array = current_obj[final_array_name]
+                if isinstance(final_array, list):
+                    # Apply to all elements in the final array
+                    for i, element in enumerate(final_array):
+                        if isinstance(element, dict):
+                            # Use 1-based indexing for the element
+                            element_index = i + 1
+                            element_value = f"{prefix}_{element_index:03d}"
+                            set_nested_field(element, field_suffix, element_value)
+            elif isinstance(current_obj, list):
+                # Current object is an array, apply to final array in each element
+                for element in current_obj:
+                    if isinstance(element, dict) and final_array_name in element:
+                        final_array = element[final_array_name]
+                        if isinstance(final_array, list):
+                            for i, sub_element in enumerate(final_array):
+                                if isinstance(sub_element, dict):
+                                    element_index = i + 1
+                                    element_value = f"{prefix}_{element_index:03d}"
+                                    set_nested_field(sub_element, field_suffix, element_value)
+            return
+        
+        # Navigate to the next level (not the final array yet)
+        next_part = parts_remaining[0]
+        remaining_parts = parts_remaining[1:]
+        
+        if isinstance(current_obj, dict) and next_part in current_obj:
+            current_level = current_obj[next_part]
+            if isinstance(current_level, list):
+                # Current level is an array, iterate through its elements
+                for i, element in enumerate(current_level):
+                    if isinstance(element, dict):
+                        navigate_and_apply_with_index(element, remaining_parts, depth + 1, indices + [i])
+            else:
+                # Current level is a single object
+                navigate_and_apply_with_index(current_level, remaining_parts, depth + 1, indices)
+    
+    # Start navigation from the record
+    navigate_and_apply_with_index(record, path_parts)
+
+
 def apply_random_fields_with_arrays(record: Dict[str, Any], 
                                   random_fields: List[Dict[str, str]],
                                   array_lengths: Dict[str, int]) -> Dict[str, Any]:
     """
-    Apply random field values to a record, handling array fields by iterating over array elements
+    Apply random field values to a record, handling multi-level array fields by iterating over array elements
     
     Args:
         record: The record to modify
@@ -496,20 +985,12 @@ def apply_random_fields_with_arrays(record: Dict[str, Any],
         field_type = field_spec['FieldType']
         
         if '.' in field_name:
-            # Check if this field references an array
-            array_field = None
-            for array_name in array_lengths.keys():
-                if field_name.startswith(f"{array_name}."):
-                    array_field = array_name
-                    break
+            # Check if this field references any array (including nested arrays)
+            array_path, field_suffix = find_array_path_and_suffix(field_name, array_lengths)
             
-            if array_field and array_field in record and isinstance(record[array_field], list):
-                # This is an array field - apply to all array elements with different random values
-                field_suffix = field_name[len(array_field) + 1:]  # Remove "ArrayName." prefix
-                for array_element in record[array_field]:
-                    if isinstance(array_element, dict):
-                        random_value = generate_random_value(field_type)
-                        set_nested_field(array_element, field_suffix, random_value)
+            if array_path:
+                # This is an array field - apply to all nested array elements with different random values
+                apply_to_nested_arrays(record, array_path, field_suffix, generate_random_value, field_type)
             else:
                 # Regular nested field
                 random_value = generate_random_value(field_type)
@@ -526,7 +1007,7 @@ def apply_linked_fields_with_arrays(record: Dict[str, Any],
                                   linked_fields: Dict[str, List[str]],
                                   array_lengths: Dict[str, int]) -> Dict[str, Any]:
     """
-    Apply linked field values derived from other fields, handling array fields by iterating over array elements
+    Apply linked field values derived from other fields, handling multi-level array fields by iterating over array elements
     
     Args:
         record: The record to modify
@@ -543,19 +1024,12 @@ def apply_linked_fields_with_arrays(record: Dict[str, Any],
                 linked_value = generate_linked_value(source_value, linked_field)
                 
                 if '.' in linked_field:
-                    # Check if this field references an array
-                    array_field = None
-                    for array_name in array_lengths.keys():
-                        if linked_field.startswith(f"{array_name}."):
-                            array_field = array_name
-                            break
+                    # Check if this field references any array (including nested arrays)
+                    array_path, field_suffix = find_array_path_and_suffix(linked_field, array_lengths)
                     
-                    if array_field and array_field in record and isinstance(record[array_field], list):
-                        # This is an array field - apply to all array elements
-                        field_suffix = linked_field[len(array_field) + 1:]  # Remove "ArrayName." prefix
-                        for array_element in record[array_field]:
-                            if isinstance(array_element, dict):
-                                set_nested_field(array_element, field_suffix, linked_value)
+                    if array_path:
+                        # This is an array field - apply to all nested array elements
+                        apply_to_nested_arrays(record, array_path, field_suffix, lambda: linked_value)
                     else:
                         # Regular nested field
                         set_nested_field(record, linked_field, linked_value)

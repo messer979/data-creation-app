@@ -16,9 +16,9 @@
   "DynamicFields": {
     "AsnId": "CM_ASN_LPN",
     "Lpn.LpnId": "CM_LPN"
-  },
-  "ArrayLengths": {
+  },  "ArrayLengths": {
     "Lpn": 10,
+    "Lpn.LpnDetail": 1,
     "ShipmentAsnAssociation": 1
   },
   "RandomFields": [
