@@ -1,61 +1,45 @@
 {
-    "StaticFields": {
-        "FacilityTypeDistribution": false,
-        "TimeZone": "US/Eastern",
-        "FacilityTypeStore": true,
-        "FacilityTypeCrossdock": false,
-        "FacilityTypeRail": false,
-        "DirectDeliveryAllowed": false,
-        "IsActive": true,
-        "RequiresDeliveryAppointment": false,
-        "ShipFromFacility": false,
-        "PickupAtStore": false,
-        "VendorFacility": false,
-        "MaintainPerpetualInventory": false,
-        "FacilityTypePort": false,
-        "FacilityTypeMaintenance": false,
-        "ShipToStore": false,
-        "FacilityTypeTerminal": false,
-        "YmTmIntegration": false,
-        "RequiresPickupAppointment": false,
-        "FacilityAddress.FirstName": "Store Manager",
-        "FacilityAddress.Country": "US"
+  "StaticFields": {
+    "TimeZone": "US/Eastern",
+    "FacilityTypeStore": true,
+    "IsActive": true,
+    "FacilityAddress.FirstName": "Store Manager",
+    "FacilityAddress.Country": "US"
+  },
+  "DynamicFields": {
+    "FacilityId": "CM_STORE"
+  },
+  "RandomFields": [    {
+      "FieldName": "Latitude",
+      "FieldType": "float(25,50,2)"
+    },    {
+      "FieldName": "Longitude",
+      "FieldType": "float(-125,-70,2)"
     },
-    "DynamicFields": {
-        "FacilityId": "CM_STORE",
-        "FacilityName": "CM_STORE"
+    {
+      "FieldName": "FacilityAddress.Address1",
+      "FieldType": "string(25)"
     },
-    "RandomFields": [
-        {
-            "FieldName": "Latitude",
-            "FieldType": "float(25,50)"
-        },
-        {
-            "FieldName": "Longitude",
-            "FieldType": "float(-125,-70)"
-        },
-        {
-            "FieldName": "FacilityAddress.Address1",
-            "FieldType": "string(25)"
-        },
-        {
-            "FieldName": "FacilityAddress.City",
-            "FieldType": "choice(Atlanta,New York,Chicago,Los Angeles,Dallas,Phoenix,Philadelphia,Houston,San Antonio,San Diego)"
-        },
-        {
-            "FieldName": "FacilityAddress.State",
-            "FieldType": "choice(GA,NY,IL,CA,TX,AZ,PA,FL,OH,MI)"
-        },
-        {
-            "FieldName": "FacilityAddress.PostalCode",
-            "FieldType": "string(5)"
-        },
-        {
-            "FieldName": "FacilityAddress.Phone",
-            "FieldType": "string(10)"
-        }
-    ],
-    "LinkedFields": {
-        "FacilityId": ["Description"]
+    {
+      "FieldName": "FacilityAddress.City",
+      "FieldType": "choice(Atlanta,New York,Chicago,Los Angeles,Dallas,Phoenix,Philadelphia,Houston,San Antonio,San Diego)"
+    },
+    {
+      "FieldName": "FacilityAddress.State",
+      "FieldType": "choice(GA,NY,IL,CA,TX,AZ,PA,FL,OH,MI)"
+    },
+    {
+      "FieldName": "FacilityAddress.PostalCode",
+      "FieldType": "string(5)"
+    },
+    {
+      "FieldName": "FacilityAddress.Phone",
+      "FieldType": "string(10)"
     }
+  ],
+  "LinkedFields": {
+    "FacilityId": [
+      "Description", "FacilityName"
+    ]
+  }
 }

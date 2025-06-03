@@ -31,23 +31,31 @@ def handle_generate_button_click(selected_template: str,
     """
     with st.spinner("Generating data..."):
         try:
-            # Auto-save generation template if it has been edited and is valid
+            # Store original template for restoration later
+            original_template = None
+            template_generator = st.session_state.data_gen.get_template_generator()
+            
+            # If template has been edited, use it temporarily for generation without saving
             if (template_editor_result and 
                 template_editor_result.get('is_valid', False) and
                 template_editor_result.get('template_changed', False)):
                 
-                from ui_components import _save_generation_template_changes
-                if _save_generation_template_changes(
-                    st.session_state.data_gen, 
-                    selected_template, 
-                    template_editor_result['template']
-                ):
-                    st.info("💾 Generation template automatically saved!")
+                # Store original template
+                original_template = template_generator.generation_templates.get(selected_template)
+                
+                # Temporarily update the in-memory template for generation
+                template_generator.generation_templates[selected_template] = template_editor_result['template']
+                
             
             # Always use generation template system for data creation
             generated_data = st.session_state.data_gen.generate_data(
                 selected_template, count, **template_params
             )
+            
+            # Restore original template if it was temporarily modified
+            if original_template is not None:
+                template_generator.generation_templates[selected_template] = original_template
+                
         except ValueError as e:
             st.error(f"❌ Error generating data: {str(e)}")
             st.info("Please check that the required template file exists in the 'templates' directory.")

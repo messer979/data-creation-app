@@ -21,7 +21,8 @@ from ui_components import (
     render_count_input,
     render_api_options,
     render_results_panel,
-    render_template_editor
+    render_template_editor,
+    render_bulk_template_manager_ui
 )
 from data_operations import handle_generate_button_click
 from endpoint_config_ui import render_endpoint_configuration_sidebar
@@ -44,7 +45,6 @@ def main():
     st.title("🚀 Data Creation Tool")
     st.markdown("Generate massive amounts of test data using JSON templates and send via API calls")
     theme = st.get_option("theme.base")
-    print(theme)
     try:
         # theme = st_theme()
         if theme == 'dark':
@@ -52,12 +52,16 @@ def main():
         else:
             st.session_state.ace_theme = "github"
     except TypeError:
-        st.session_state.ace_theme = "github"
-
-    # Render sidebar configuration
+        st.session_state.ace_theme = "github"    # Render sidebar configuration
     render_sidebar(
         st.session_state.config_manager
     )
+    
+    # Check if we should show the template manager page instead of main content
+    if st.session_state.get('show_template_manager_page', False):
+        # Render the bulk template manager UI which will handle the template manager page
+        render_bulk_template_manager_ui(st.session_state.data_gen)
+        return  # Exit early to avoid rendering main content
     
     # Main content area (single column layout)
     # Template selection
@@ -68,7 +72,6 @@ def main():
         return  # Exit if no templates available
     
     # Generation Template Editor
-    st.markdown("---")
     template_editor_result = render_template_editor(
         st.session_state.data_gen,
         selected_template
@@ -100,9 +103,7 @@ def main():
         )
         
         if success:
-            st.rerun()  # Refresh to show results
-    
-    # Results panel at the bottom
+            st.rerun()  # Refresh to show results      # Results panel at the bottom
     st.markdown("---")
     render_results_panel()
     

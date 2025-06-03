@@ -1,27 +1,22 @@
 {
   "StaticFields": {
-    "Style": "Conveyable",
-    "MonetaryValueCurrencyCode": "USD"
+    "Style": "Shirt"
   },
   "DynamicFields": {
     "ItemId": "CM_ITEM"
   },
-  "RandomFields": [
-    {
+  "RandomFields": [    {
       "FieldName": "Volume",
-      "FieldType": "float(2,3)"
-    },
-    {
+      "FieldType": "float(2,3,2)"
+    },    {
       "FieldName": "Width",
-      "FieldType": "float(2,3)"
-    },
-    {
+      "FieldType": "float(2,3,2)"
+    },    {
       "FieldName": "Length",
-      "FieldType": "float(2,3)"
-    },
-    {
+      "FieldType": "float(2,3,2)"
+    },    {
       "FieldName": "Weight",
-      "FieldType": "float(2,3)"
+      "FieldType": "float(2,3,2)"
     },
     {
       "FieldName": "Height",

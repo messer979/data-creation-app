@@ -88,10 +88,6 @@ class DataGenerator:
             payload = self._wrap_payload(data, template_config)
             
             response = requests.post(url, json=payload, headers=request_headers, timeout=30)
-            print(response.request.body)
-            print('\n')
-            print(response.headers)
-            print(response.json())
             response.raise_for_status()
 
             

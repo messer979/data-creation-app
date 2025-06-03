@@ -29,6 +29,25 @@ def apply_static_fields(record: Dict[str, Any], static_fields: Dict[str, Any]) -
     return record
 
 
+def process_dynamic_field_keywords(prefix: str) -> str:
+    """
+    Process keyword variables in dynamic field prefixes
+    
+    Args:
+        prefix: The prefix string that may contain keyword variables
+    
+    Returns:
+        Processed prefix with keyword variables replaced
+    """
+    processed = prefix
+    
+    # Replace {{dttm}} with current date in MMDD format
+    if '{{dttm}}' in processed:
+        current_date = datetime.now().strftime('%m%d')
+        processed = processed.replace('{{dttm}}', current_date)
+    return processed
+
+
 def apply_dynamic_fields(record: Dict[str, Any], 
                         dynamic_fields: Dict[str, str], 
                         dynamic_counters: Dict[str, int]) -> Dict[str, Any]:
@@ -37,7 +56,7 @@ def apply_dynamic_fields(record: Dict[str, Any],
     
     Args:
         record: The record to modify
-        dynamic_fields: Dictionary of field_name -> prefix
+        dynamic_fields: Dictionary of field_name -> prefix (supports {{dttm}} for current date MMDD)
         dynamic_counters: Mutable dictionary tracking counters for each field
     
     Returns:
@@ -49,7 +68,10 @@ def apply_dynamic_fields(record: Dict[str, Any],
         else:
             dynamic_counters[field] += 1
         
-        generated_value = f"{prefix}_{dynamic_counters[field]:06d}"
+        # Process keyword variables in prefix
+        processed_prefix = process_dynamic_field_keywords(prefix)
+        
+        generated_value = f"{processed_prefix}_{dynamic_counters[field]:03d}"
         set_nested_field(record, field, generated_value)
     
     return record
@@ -102,79 +124,27 @@ def set_nested_field(obj: Dict[str, Any], field_path: str, value: Any) -> None:
     
     Args:
         obj: Object to modify
-        field_path: Dot notation path (e.g., "items.0.name" or "AsnLine.0.ItemId")
+        field_path: Dot notation path (e.g., "AsnLine.ItemId")
         value: Value to set
     """
     parts = field_path.split('.')
     current = obj
     
-    for i, part in enumerate(parts[:-1]):
-        next_part = parts[i + 1] if i + 1 < len(parts) else None
-        
-        if '[' in part and ']' in part:
-            # Handle array notation like "items[0]"
-            field_name, index_str = part.split('[')
-            index = int(index_str.rstrip(']'))
-            
-            if field_name not in current:
-                current[field_name] = []
-            
-            # Ensure array is large enough
-            while len(current[field_name]) <= index:
-                current[field_name].append({})
-            
-            current = current[field_name][index]
-        elif part.isdigit():
-            # Handle numeric part when current is a list (e.g., "AsnLine.0.ItemId")
-            index = int(part)
-            if isinstance(current, list):
-                # Ensure list is large enough
-                while len(current) <= index:
-                    current.append({})
-                current = current[index]
-            else:
-                # This shouldn't happen in well-formed paths
-                raise ValueError(f"Expected list but found {type(current)} at path part '{part}'")
+    for part in parts[:-1]:
+        if isinstance(current, dict):
+            if part not in current:
+                current[part] = {}
+            current = current[part]
         else:
-            if isinstance(current, dict):
-                if part not in current:
-                    # Check if next part is numeric to decide between list and dict
-                    if next_part and next_part.isdigit():
-                        current[part] = []
-                    else:
-                        current[part] = {}
-                current = current[part]
-            else:
-                # This shouldn't happen in well-formed paths
-                raise ValueError(f"Expected dict but found {type(current)} at path part '{part}'")
+            # This shouldn't happen in well-formed paths
+            raise ValueError(f"Expected dict but found {type(current)} at path part '{part}'")
     
     # Set the final value
     final_field = parts[-1]
-    if '[' in final_field and ']' in final_field:
-        field_name, index_str = final_field.split('[')
-        index = int(index_str.rstrip(']'))
-        
-        if field_name not in current:
-            current[field_name] = []
-        
-        while len(current[field_name]) <= index:
-            current[field_name].append(None)
-        
-        current[field_name][index] = value
-    elif final_field.isdigit():
-        # Handle numeric final field when current is a list
-        index = int(final_field)
-        if isinstance(current, list):
-            while len(current) <= index:
-                current.append(None)
-            current[index] = value
-        else:
-            raise ValueError(f"Expected list but found {type(current)} for numeric field '{final_field}'")
+    if isinstance(current, dict):
+        current[final_field] = value
     else:
-        if isinstance(current, dict):
-            current[final_field] = value
-        else:
-            raise ValueError(f"Expected dict but found {type(current)} for field '{final_field}'")
+        raise ValueError(f"Expected dict but found {type(current)} for field '{final_field}'")
 
 
 def get_nested_field(obj: Dict[str, Any], field_path: str) -> Any:
@@ -183,7 +153,7 @@ def get_nested_field(obj: Dict[str, Any], field_path: str) -> Any:
     
     Args:
         obj: Object to read from
-        field_path: Dot notation path (e.g., "items.0.name" or "AsnLine.0.ItemId")
+        field_path: Dot notation path (e.g., "AsnLine.ItemId")
     
     Returns:
         Field value or None if not found
@@ -192,33 +162,10 @@ def get_nested_field(obj: Dict[str, Any], field_path: str) -> Any:
     current = obj
     
     for part in parts:
-        if '[' in part and ']' in part:
-            # Handle array notation like "items[0]"
-            field_name, index_str = part.split('[')
-            index = int(index_str.rstrip(']'))
-            
-            if field_name not in current or not isinstance(current[field_name], list):
-                return None
-            
-            if index >= len(current[field_name]):
-                return None
-            
-            current = current[field_name][index]
-        elif part.isdigit():
-            # Handle numeric part when current is a list (e.g., "AsnLine.0.ItemId")
-            index = int(part)
-            if isinstance(current, list):
-                if index >= len(current):
-                    return None
-                current = current[index]
-            else:
-                # Expected a list but found something else
-                return None
-        else:
-            # Handle dictionary key access
-            if not isinstance(current, dict) or part not in current:
-                return None
-            current = current[part]
+        # Handle dictionary key access only
+        if not isinstance(current, dict) or part not in current:
+            return None
+        current = current[part]
     
     return current
 
@@ -270,7 +217,7 @@ def generate_random_value(field_type: str) -> Any:
         # datetime(now), datetime(past), datetime(future) - with whitespace handling
         match = re.match(r'datetime\(\s*(\w+)\s*\)', field_type)
         if match:
-            time_type = match.group(1)
+            time_type = match.group(1)            
             if time_type == 'now':
                 return datetime.now().isoformat()
             elif time_type == 'past':
@@ -348,24 +295,272 @@ def create_record_from_template(base_template: Dict[str, Any],
     
     Returns:
         Generated record
-    """
-    # Start with a deep copy of the base template
+    """    # Start with a deep copy of the base template
     record = deep_copy_template(base_template)
     
-    # Apply static fields
+    # Get array lengths configuration
+    array_lengths = generation_template.get('ArrayLengths', {})
+    
+    # Initialize arrays to the specified lengths before processing fields
+    for array_name, array_length in array_lengths.items():
+        if array_name in record and isinstance(record[array_name], list):
+            # Expand existing array
+            current_length = len(record[array_name])
+            if current_length < array_length:
+                # Use the first element as a template for new elements
+                template_element = record[array_name][0] if current_length > 0 else {}
+                for i in range(current_length, array_length):
+                    record[array_name].append(deep_copy_template(template_element))
+            elif current_length > array_length:
+                # Truncate array if it's longer than needed
+                record[array_name] = record[array_name][:array_length]
+        elif array_name not in record:
+            # Create new array with empty objects
+            record[array_name] = [{} for _ in range(array_length)]
+    
+    # Apply static fields with array handling
     if 'StaticFields' in generation_template:
-        record = apply_static_fields(record, generation_template['StaticFields'])
+        record = apply_static_fields_with_arrays(record, generation_template['StaticFields'], array_lengths)
     
-    # Apply dynamic fields (incremental)
+    # Apply dynamic fields with array handling
     if 'DynamicFields' in generation_template:
-        record = apply_dynamic_fields(record, generation_template['DynamicFields'], dynamic_counters)
+        record = apply_dynamic_fields_with_arrays(record, generation_template['DynamicFields'], dynamic_counters, array_lengths)
     
-    # Apply random fields
+    # Apply random fields with array handling
     if 'RandomFields' in generation_template:
-        record = apply_random_fields(record, generation_template['RandomFields'])
+        record = apply_random_fields_with_arrays(record, generation_template['RandomFields'], array_lengths)
     
-    # Apply linked fields (derive from other fields)
+    # Apply linked fields with array handling
     if 'LinkedFields' in generation_template:
-        record = apply_linked_fields(record, generation_template['LinkedFields'])
+        record = apply_linked_fields_with_arrays(record, generation_template['LinkedFields'], array_lengths)
+    
+    return record
+
+
+def expand_fields_for_arrays(fields: Dict[str, Any], array_lengths: Dict[str, int]) -> Dict[str, Any]:
+    """
+    Since arrays are handled iteratively, just return fields as-is
+    
+    Args:
+        fields: Dictionary of field definitions
+        array_lengths: Dictionary of array_name -> length mappings (not used)
+    
+    Returns:
+        Original fields dictionary unchanged
+    """
+    return fields
+
+
+def expand_random_fields_for_arrays(random_fields: List[Dict[str, str]], array_lengths: Dict[str, int]) -> List[Dict[str, str]]:
+    """
+    Since arrays are handled iteratively, just return random fields as-is
+    
+    Args:
+        random_fields: List of random field specifications
+        array_lengths: Dictionary of array_name -> length mappings (not used)
+    
+    Returns:
+        Original random fields list unchanged
+    """
+    return random_fields
+
+
+def expand_linked_fields_for_arrays(linked_fields: Dict[str, List[str]], array_lengths: Dict[str, int]) -> Dict[str, List[str]]:
+    """
+    Since arrays are handled iteratively, just return linked fields as-is
+    
+    Args:
+        linked_fields: Dictionary of source_field -> [linked_field_names]
+        array_lengths: Dictionary of array_name -> length mappings (not used)
+    
+    Returns:
+        Original linked fields dictionary unchanged
+    """
+    return linked_fields
+
+
+def apply_static_fields_with_arrays(record: Dict[str, Any], 
+                                   static_fields: Dict[str, Any], 
+                                   array_lengths: Dict[str, int]) -> Dict[str, Any]:
+    """
+    Apply static field values to a record, handling array fields by iterating over array elements
+    
+    Args:
+        record: The record to modify
+        static_fields: Dictionary of field_name -> static_value
+        array_lengths: Dictionary of array_name -> length mappings
+    
+    Returns:
+        Modified record
+    """
+    for field, value in static_fields.items():
+        if '.' in field:
+            # Check if this field references an array
+            array_field = None
+            for array_name in array_lengths.keys():
+                if field.startswith(f"{array_name}."):
+                    array_field = array_name
+                    break
+            
+            if array_field and array_field in record and isinstance(record[array_field], list):
+                # This is an array field - apply to all array elements
+                field_suffix = field[len(array_field) + 1:]  # Remove "ArrayName." prefix
+                for array_element in record[array_field]:
+                    if isinstance(array_element, dict):
+                        set_nested_field(array_element, field_suffix, value)
+            else:
+                # Regular nested field
+                set_nested_field(record, field, value)
+        else:
+            # Simple field
+            set_nested_field(record, field, value)
+    
+    return record
+
+
+def apply_dynamic_fields_with_arrays(record: Dict[str, Any], 
+                                   dynamic_fields: Dict[str, str], 
+                                   dynamic_counters: Dict[str, int],
+                                   array_lengths: Dict[str, int]) -> Dict[str, Any]:
+    """
+    Apply dynamic field values to a record, handling array fields by iterating over array elements
+    
+    Args:
+        record: The record to modify
+        dynamic_fields: Dictionary of field_name -> prefix
+        dynamic_counters: Mutable dictionary tracking counters for each field
+        array_lengths: Dictionary of array_name -> length mappings
+    
+    Returns:
+        Modified record
+    """
+    for field, prefix in dynamic_fields.items():
+        # Process keyword variables in prefix
+        processed_prefix = process_dynamic_field_keywords(prefix)
+        
+        if '.' in field:
+            # Check if this field references an array
+            array_field = None
+            for array_name in array_lengths.keys():
+                if field.startswith(f"{array_name}."):
+                    array_field = array_name
+                    break
+            
+            if array_field and array_field in record and isinstance(record[array_field], list):
+                # This is an array field - increment per element within this record
+                field_suffix = field[len(array_field) + 1:]  # Remove "ArrayName." prefix
+                
+                for i, array_element in enumerate(record[array_field]):
+                    if isinstance(array_element, dict):
+                        # For array elements, use per-record indexing (1-based)
+                        element_value = f"{processed_prefix}_{i + 1:03d}"
+                        set_nested_field(array_element, field_suffix, element_value)
+            else:
+                # Regular nested field - use global counter
+                if field not in dynamic_counters:
+                    dynamic_counters[field] = 1
+                else:
+                    dynamic_counters[field] += 1
+                
+                generated_value = f"{processed_prefix}_{dynamic_counters[field]:03d}"
+                set_nested_field(record, field, generated_value)
+        else:
+            # Simple field - use global counter
+            if field not in dynamic_counters:
+                dynamic_counters[field] = 1
+            else:
+                dynamic_counters[field] += 1
+            
+            generated_value = f"{processed_prefix}_{dynamic_counters[field]:03d}"
+            set_nested_field(record, field, generated_value)
+    
+    return record
+
+
+def apply_random_fields_with_arrays(record: Dict[str, Any], 
+                                  random_fields: List[Dict[str, str]],
+                                  array_lengths: Dict[str, int]) -> Dict[str, Any]:
+    """
+    Apply random field values to a record, handling array fields by iterating over array elements
+    
+    Args:
+        record: The record to modify
+        random_fields: List of field specifications with FieldName and FieldType
+        array_lengths: Dictionary of array_name -> length mappings
+    
+    Returns:
+        Modified record
+    """
+    for field_spec in random_fields:
+        field_name = field_spec['FieldName']
+        field_type = field_spec['FieldType']
+        
+        if '.' in field_name:
+            # Check if this field references an array
+            array_field = None
+            for array_name in array_lengths.keys():
+                if field_name.startswith(f"{array_name}."):
+                    array_field = array_name
+                    break
+            
+            if array_field and array_field in record and isinstance(record[array_field], list):
+                # This is an array field - apply to all array elements with different random values
+                field_suffix = field_name[len(array_field) + 1:]  # Remove "ArrayName." prefix
+                for array_element in record[array_field]:
+                    if isinstance(array_element, dict):
+                        random_value = generate_random_value(field_type)
+                        set_nested_field(array_element, field_suffix, random_value)
+            else:
+                # Regular nested field
+                random_value = generate_random_value(field_type)
+                set_nested_field(record, field_name, random_value)
+        else:
+            # Simple field
+            random_value = generate_random_value(field_type)
+            set_nested_field(record, field_name, random_value)
+    
+    return record
+
+
+def apply_linked_fields_with_arrays(record: Dict[str, Any], 
+                                  linked_fields: Dict[str, List[str]],
+                                  array_lengths: Dict[str, int]) -> Dict[str, Any]:
+    """
+    Apply linked field values derived from other fields, handling array fields by iterating over array elements
+    
+    Args:
+        record: The record to modify
+        linked_fields: Dictionary of source_field -> [linked_field_names]
+        array_lengths: Dictionary of array_name -> length mappings
+    
+    Returns:
+        Modified record
+    """
+    for source_field, linked_field_names in linked_fields.items():
+        source_value = get_nested_field(record, source_field)
+        if source_value:
+            for linked_field in linked_field_names:
+                linked_value = generate_linked_value(source_value, linked_field)
+                
+                if '.' in linked_field:
+                    # Check if this field references an array
+                    array_field = None
+                    for array_name in array_lengths.keys():
+                        if linked_field.startswith(f"{array_name}."):
+                            array_field = array_name
+                            break
+                    
+                    if array_field and array_field in record and isinstance(record[array_field], list):
+                        # This is an array field - apply to all array elements
+                        field_suffix = linked_field[len(array_field) + 1:]  # Remove "ArrayName." prefix
+                        for array_element in record[array_field]:
+                            if isinstance(array_element, dict):
+                                set_nested_field(array_element, field_suffix, linked_value)
+                    else:
+                        # Regular nested field
+                        set_nested_field(record, linked_field, linked_value)
+                else:
+                    # Simple field
+                    set_nested_field(record, linked_field, linked_value)
     
     return record

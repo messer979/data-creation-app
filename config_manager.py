@@ -171,7 +171,6 @@ class ConfigurationManager:
         return json.dumps(full_config, indent=2)
         
     def _import_full_config(self, config_data: dict) -> bool:
-        print('running fulle import')
         try:
             if "base_url" in config_data:
                 self.base_url = config_data["base_url"]

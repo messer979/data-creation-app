@@ -25,7 +25,6 @@ def send_data_to_api(generated_data: List[Dict[Any, Any]],
     Returns:
         List of batch results
     """
-    print('posting to api')
     api_results = []
     progress_bar = st.progress(0)
     status_text = st.empty()

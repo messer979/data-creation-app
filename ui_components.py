@@ -8,11 +8,13 @@ from streamlit_ace import st_ace
 import json
 import os
 import pandas as pd
+from datetime import datetime
 from typing import List, Dict, Any
 from config import TEMPLATE_DEFAULTS, MAX_RECORDS, DEFAULT_RECORD_COUNT, DEFAULT_BATCH_SIZE, MAX_BATCH_SIZE
 from api_operations import display_api_results
 from endpoint_config_ui import render_endpoint_configuration_sidebar
 from template_guide_modal import guide_modal
+from bulk_template_manager import BulkTemplateManager
 
 
 
@@ -20,13 +22,24 @@ def render_sidebar(config_manager):
     """
     Render the sidebar with configuration options (global and endpoint config only)
     """
-    with st.sidebar:
-        # Template Guide button
-        if st.button("📚 Template Guide", help="Open Generation Template Guide"):
+    with st.sidebar:        # Help button
+        if st.button("❓ Help", help="Open Help Guide for Data Creation Tool"):
             guide_modal()
-        
+        st.markdown("---")
+          # Template Management section
         # Render endpoint configuration section
         render_endpoint_configuration_sidebar(config_manager)
+
+
+        st.markdown("### 📦 Template Management")
+        
+        if st.button("🛠️ Template Manager", help="Open template management page", use_container_width=True):
+            st.session_state.show_template_manager_page = True
+            st.session_state.show_bulk_export = False
+            st.session_state.show_bulk_import = False
+            st.session_state.show_bulk_manager = False
+            st.rerun()
+        
 
 
 def render_template_selection(template_options: List[str]) -> str:
@@ -106,45 +119,35 @@ def render_data_preview(data: List[Dict[Any, Any]], data_type: str):
         with col2:
             use_code_viewer = st.toggle("Use Code View", value=False, help="Toggle between simple JSON view and code view")
         
-        with st.expander("Preview Data", expanded=False):
+        with st.expander("Preview Data", expanded=True):
             for i, record in enumerate(data[:3]):
-                if use_code_viewer:
-                    # Get theme for ace editor
-                    
+                if use_code_viewer:                    
                     st.markdown(f"**Record {i+1}:**")
                     st.code(json.dumps(record, indent=4), language="json", height=400)
                 else:
                     st.json(record, expanded=1)
                   
                 if i < 2 and i < len(data) - 1:
-                    st.divider()
-          # View All toggle button
-        if len(data) > 3:
-            # Initialize session state for view all toggle
-            view_all_key = f"view_all_{data_type}_{len(data)}"
-            if view_all_key not in st.session_state:
-                st.session_state[view_all_key] = False
-            
-            # Toggle button behavior
-            current_state = st.session_state[view_all_key]
-            button_label = "🔽 Hide All Data" if current_state else "View All Data"
-            button_help = f"Hide all {len(data)} records" if current_state else f"Show all {len(data)} records in code view"
-            
-            if st.button(button_label, use_container_width=True, help=button_help):
-                st.session_state[view_all_key] = not current_state
-                st.rerun()
-            
-            # Show data if toggled on
-            if st.session_state[view_all_key]:
-                st.subheader(f"Complete Dataset ({len(data)} records)")
-                full_data_json = json.dumps(data, indent=2)
-                st.code(full_data_json, language="json", height=600)
-        
-        # Download options
+                    st.divider()          # Download All Data button
+        # Create download button for complete dataset
+        timestamp = datetime.now().strftime("%y%m%d%H%M%S")
+        full_data_json = json.dumps(data, indent=2)
+        # st.download_button(
+        #     label=f"📥 Download All Data ({len(data)} records)",
+        #     data=full_data_json,
+        #     file_name=f"{data_type}_complete_{len(data)}_{timestamp}.json",
+        #     mime="application/json",
+        #     use_container_width=True,
+        #     help=f"Download all {len(data)} records as JSON file"
+        # )
+          # Download options
         st.subheader("💾 Download")
         
         # Create columns for side-by-side buttons
         col1, col2 = st.columns(2)
+        
+        # Generate timestamp for filenames
+        timestamp = datetime.now().strftime("%y%m%d%H%M%S")
         
         # JSON download
         json_str = json.dumps(data, indent=2)
@@ -153,7 +156,7 @@ def render_data_preview(data: List[Dict[Any, Any]], data_type: str):
             st.download_button(
                 label="📄 Download as JSON",
                 data=json_str,
-                file_name=f"{data_type}_{len(data)}_records.json",
+                file_name=f"{data_type}_{len(data)}_{timestamp}.json",
                 mime="application/json",
                 use_container_width=True
             )
@@ -167,7 +170,7 @@ def render_data_preview(data: List[Dict[Any, Any]], data_type: str):
                     st.download_button(
                         label="📊 Download as CSV",
                         data=csv_str,
-                        file_name=f"{data_type}_{len(data)}_records.csv",
+                        file_name=f"{data_type}_{len(data)}_{timestamp}.csv",
                         mime="text/csv",
                         use_container_width=True
                     )
@@ -182,21 +185,210 @@ def render_results_panel():
     Render the results panel showing generated data and API results
     """
     st.header("📋 Results")
-    
+    # Display API results
+    if 'api_results' in st.session_state:
+        display_api_results(st.session_state.api_results)
+
     # Display generated data
     if 'generated_data' in st.session_state:
         data = st.session_state.generated_data
         data_type = st.session_state.get('data_type', 'data')
         render_data_preview(data, data_type)
+
+
+def render_bulk_template_manager_ui(data_gen):
+    """
+    Render the bulk template manager interface based on session state
     
-    # Display API results
-    if 'api_results' in st.session_state:
-        display_api_results(st.session_state.api_results)
+    Args:
+        data_gen: DataGenerator instance
+    """
+    # Get the template generator
+    template_generator = data_gen.get_template_generator()
+    
+    # Check if we should show the template manager page
+    if st.session_state.get('show_template_manager_page', False):
+        render_template_manager_page(template_generator)
+    
+    # Legacy support for existing bulk manager states
+    elif st.session_state.get('show_bulk_manager', False):
+        st.markdown("---")
+        BulkTemplateManager.render_bulk_template_manager(template_generator)
+        
+        # Add close button
+        if st.button("❌ Close Bulk Manager", help="Close bulk template manager"):
+            st.session_state.show_bulk_manager = False
+            st.rerun()
+    
+    elif st.session_state.get('show_bulk_export', False):
+        st.markdown("---")
+        render_bulk_export_ui(template_generator)
+        
+    elif st.session_state.get('show_bulk_import', False):
+        st.markdown("---")
+        render_bulk_import_ui(template_generator)
+
+
+def render_template_manager_page(template_generator):
+    """
+    Render the dedicated template management page
+    
+    Args:
+        template_generator: TemplateGenerator instance
+    """
+    # Clear the main content area and show template manager
+    st.markdown("---")
+    
+    # Header with back button
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        if st.button("← Back to Main", help="Return to main data generation page"):
+            st.session_state.show_template_manager_page = False
+            st.rerun()
+    
+    with col2:
+        st.title("🛠️ Template Manager")
+    
+    st.markdown("\n")
+    
+    # Render the full bulk template manager interface
+    BulkTemplateManager.render_bulk_template_manager(template_generator)
+
+
+def render_bulk_export_ui(template_generator):
+    """
+    Render the bulk export UI
+    
+    Args:
+        template_generator: TemplateGenerator instance
+    """
+    st.subheader("📤 Export All Templates")
+    
+    if template_generator.generation_templates:
+        st.write(f"Export all {len(template_generator.generation_templates)} generation templates as a single JSON file.")
+        
+        # Show template list
+        with st.expander("📋 Templates to Export", expanded=False):
+            for template_name in sorted(template_generator.generation_templates.keys()):
+                st.write(f"• {template_name}")
+          # Export and download button
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            # Generate export data
+            json_str, export_data = BulkTemplateManager.export_all_templates(template_generator)
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"generation_templates_export_{timestamp}.json"
+            
+            # Single button that instantly downloads
+            st.download_button(
+                label="📥 Export & Download Templates",
+                data=json_str,
+                file_name=filename,
+                mime="application/json",
+                use_container_width=True,
+                help=f"Export and download all {len(template_generator.generation_templates)} templates instantly"
+            )
+            
+            # Show export summary
+            st.info(f"📋 Ready to export: {export_data['metadata']['template_count']} templates")
+        
+        with col2:
+            if st.button("❌ Close", help="Close export interface"):
+                st.session_state.show_bulk_export = False
+                st.rerun()
+    else:
+        st.warning("No templates found to export.")
+        if st.button("❌ Close", help="Close export interface"):
+            st.session_state.show_bulk_export = False
+            st.rerun()
+
+
+def render_bulk_import_ui(template_generator):
+    """
+    Render the bulk import UI
+    
+    Args:
+        template_generator: TemplateGenerator instance
+    """
+    st.subheader("📥 Import Templates")
+    
+    # File uploader
+    uploaded_file = st.file_uploader(
+        "Import generation templates from a JSON file.", 
+        type=['json'],
+        help="Upload a JSON file containing generation templates",
+        key="bulk_import_file"
+    )
+        
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        if uploaded_file is not None:
+            try:
+                # Read the uploaded file
+                content = uploaded_file.read().decode('utf-8')
+                
+                # Preview the import
+                try:
+                    parsed_preview = json.loads(content)
+                    if "templates" in parsed_preview and isinstance(parsed_preview["templates"], list):
+                        st.info(f"📋 Ready to import {len(parsed_preview['templates'])} templates")
+                        
+                        # Show template names
+                        with st.expander("🔍 Preview Templates", expanded=True):
+                            for template in parsed_preview["templates"]:
+                                if isinstance(template, dict) and "name" in template:
+                                    exists = template["name"] in template_generator.generation_templates
+                                    status = "⚠️ Will overwrite" if exists else "⚠️ Will skip" if exists else "✅ New"
+                                    st.write(f"• {template['name']} {status}")
+                    else:
+                        st.error("Invalid template format")
+                        uploaded_file = None
+                except json.JSONDecodeError:
+                    st.error("Invalid JSON format")
+                    uploaded_file = None
+                
+                # Import button
+                if uploaded_file is not None:
+                    if st.button("🔼 Import Templates", use_container_width=True):
+                        success, message, imported, skipped = BulkTemplateManager.import_all_templates(
+                            template_generator, content
+                        )
+                        
+                        if success:
+                            st.success(f"✅ {message}")
+                            
+                            if imported:
+                                with st.expander("✅ Imported Templates", expanded=True):
+                                    for template_name in imported:
+                                        st.write(f"• {template_name}")
+                            
+                            if skipped:
+                                with st.expander("⚠️ Skipped Templates", expanded=False):
+                                    for template_name in skipped:
+                                        st.write(f"• {template_name}")
+                            
+                            # Refresh the page to show new templates
+                            if imported:
+                                st.balloons()
+                                st.rerun()
+                        else:
+                            st.error(f"❌ {message}")
+                            
+            except Exception as e:
+                st.error(f"Error reading file: {str(e)}")
+    
+    with col2:
+        if st.button("❌ Close", help="Close import interface"):
+            st.session_state.show_bulk_import = False
+            st.rerun()
+    
 
 
 def render_template_editor(data_gen, selected_template: str) -> Dict[str, Any]:
     """
-    Render template editor for generation templates with JSON text area and field configuration
+    Render template editor for generation templates with JSON text area
     
     Args:
         data_gen: DataGenerator instance
@@ -223,8 +415,6 @@ def render_template_editor(data_gen, selected_template: str) -> Dict[str, Any]:
         }
         template_json = json.dumps(default_template, indent=2)
         current_template = default_template
-      # Template editing section
-    st.markdown("**Generation Template Configuration**")
     
     # JSON editor
     with st.expander("Edit Generation Template", expanded=True):
@@ -262,27 +452,18 @@ def render_template_editor(data_gen, selected_template: str) -> Dict[str, Any]:
                 for error in validation_errors:
                     st.error(f"  • {error}")
                 template_valid = False
-            else:
-                st.success("✅ Valid generation template format")
                 
         except json.JSONDecodeError as e:
             st.error(f"❌ Invalid JSON: {e}")
             template_valid = False
-              # Save template option
-        if template_valid:
-            col_info, col_reset = st.columns([3, 1])
-            with col_info:
-                st.info("💡 Template changes will be automatically saved when you generate data.")
-            with col_reset:
-                if st.button("🔄 Reset Template", help="Reset to original generation template"):
-                    if _reset_generation_template(data_gen, selected_template):
-                        st.success("Generation template reset successfully!")
-                        st.rerun()
+    
+    final_template = parsed_template if template_valid else current_template
+    template_changed = template_valid and (json.dumps(parsed_template, sort_keys=True) != json.dumps(current_template, sort_keys=True))
     
     return {
-        "template": parsed_template if template_valid else current_template,
+        "template": final_template,
         "is_valid": template_valid,
-        "template_changed": template_valid and (json.dumps(parsed_template, sort_keys=True) != json.dumps(current_template, sort_keys=True))
+        "template_changed": template_changed
     }
 
 
