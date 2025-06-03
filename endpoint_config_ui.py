@@ -52,7 +52,7 @@ def render_endpoint_configuration_sidebar(config_manager: ConfigurationManager):
                 key="global_organization"
             )
               # Facility configuration
-            current_facility = config_manager.get_selected_facility()
+            current_facility = config_manager.get_selected_facility()            
             new_facility = st.text_input(
                 "Selected Facility",
                 value=current_facility,
@@ -62,20 +62,6 @@ def render_endpoint_configuration_sidebar(config_manager: ConfigurationManager):
             
             try:
                 config_saved = False
-                if new_base_url != current_base_url:
-                    config_manager.set_base_url(new_base_url)
-                    config_saved = True
-                if new_token != display_token:
-                    config_manager.set_shared_token(new_token)
-                    config_saved = True
-                if new_organization != current_organization:
-                    config_manager.set_selected_organization(new_organization)
-                    config_saved = True
-                if new_facility != current_facility:
-                    config_manager.set_selected_facility(new_facility)
-                    config_saved = True
-                if config_saved:
-                    st.rerun()
                 if new_base_url != current_base_url:
                     config_manager.set_base_url(new_base_url)
                     config_saved = True
@@ -118,35 +104,14 @@ def render_endpoint_configuration_sidebar(config_manager: ConfigurationManager):
             st.markdown("### 📤 Export Configuration")
             
             # Export options
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                if st.button("📤 Export Endpoints Only", help="Export only endpoint configurations (legacy format)"):
-                    config_json = config_manager.export_user_config()
-                    if config_json and config_json != "{}":
-                        st.download_button(
-                            label="💾 Download Endpoints",
-                            data=config_json,
-                            file_name="endpoint_config.json",
-                            mime="application/json",
-                            key="download_endpoints"
-                        )
-                    else:
-                        st.info("No custom endpoint configuration to export")
-            
-            with col2:
-                if st.button("📦 Export Full Config", help="Export complete configuration including global settings"):
-                    full_config_json = config_manager.export_full_config()
-                    if full_config_json:
-                        st.download_button(
-                            label="💾 Download Full Config",
-                            data=full_config_json,
-                            file_name="full_config.json",
-                            mime="application/json",
-                            key="download_full"
-                        )
-                    else:
-                        st.error("Error generating full configuration export")
+            st.download_button(
+                label="💾 Download Full Config",
+                data=config_manager.export_full_config(),
+                help="Download the full configuration including all endpoints and global settings",
+                file_name="full_config.json",
+                mime="application/json",
+                key="download_full"
+            )
             
             # Reset option
             if st.button("🔄 Reset All", help="Reset all configurations to defaults"):
@@ -157,8 +122,7 @@ def render_endpoint_configuration_sidebar(config_manager: ConfigurationManager):
             # Import configuration
             st.markdown("### 📥 Import Configuration")
             st.markdown("**Upload Configuration File:**")
-            st.info("💡 Supports both endpoint-only files and full configuration files")
-            
+            st.session_state.uploading = False
             uploaded_file = st.file_uploader(
                 "Choose config file", 
                 type=['json'],
@@ -166,34 +130,41 @@ def render_endpoint_configuration_sidebar(config_manager: ConfigurationManager):
                 help="Upload a previously exported configuration file (supports both formats)"
             )
             
+            # Initialize session state for file processing tracking
+            if "last_processed_file" not in st.session_state:
+                st.session_state.last_processed_file = None
+            
             if uploaded_file is not None:
-                try:
-                    config_content = uploaded_file.read().decode('utf-8')
-                    
-                    # Try to determine the format
-                    import json
-                    config_data = json.loads(config_content)
-                    
-                    # Check if it's the new full format
-                    if isinstance(config_data, dict) and "version" in config_data:
-                        # Full configuration format
-                        st.info("📦 Detected full configuration format - importing global settings and endpoints")
-                        import_success = config_manager.import_full_config(config_content)
-                    else:
-                        # Legacy endpoint-only format
-                        st.info("📋 Detected endpoint-only configuration format")
-                        import_success = config_manager.import_user_config(config_content)
-                    
-                    if import_success:
-                        st.success("Configuration imported successfully!")
-                        st.rerun()
-                    else:
-                        st.error("Failed to import configuration")
+                if st.session_state.last_processed_file != uploaded_file.file_id:
+                    try:
+                        config_content = uploaded_file.read().decode('utf-8')
                         
-                except json.JSONDecodeError:
-                    st.error("Invalid JSON file format")
-                except Exception as e:
-                    st.error(f"Error reading file: {e}")
+                        # Try to determine the format
+                        import json
+                        config_data = json.loads(config_content)
+                        # Check if it's the new full format
+                        if isinstance(config_data, dict):
+                            # Full configuration format
+                            st.info("📦 Detected full configuration format - importing global settings and endpoints")
+                            import_success = config_manager.import_full_config(config_content)
+                        
+                        if import_success:
+                            st.success("Configuration imported successfully!")
+                            # Mark this file as processed
+                            st.session_state.last_processed_file = uploaded_file.file_id
+                            st.session_state.uploading = False
+                            # Delay the rerun to allow success message to display
+                            st.rerun()
+                        else:
+                            st.error("Failed to import configuration")
+                            
+                    except json.JSONDecodeError:
+                        st.error("Invalid JSON file format")
+                    except Exception as e:
+                        st.error(f"Error reading file: {e}")
+                else:
+                    # File already processed, show status
+                    st.success("✅ Configuration file already imported")
 
 
 def render_template_endpoint_config(config_manager: ConfigurationManager, template_name: str):

@@ -16,7 +16,7 @@ class ConfigurationManager:
     
     def __init__(self, config_file: str = "configuration.json"):
         self.config_file = config_file
-        self.default_config = {}
+        self.default_endpoints = {}
         self.default_headers = {}
         self.user_config = {}
         self.base_url = ""
@@ -24,16 +24,16 @@ class ConfigurationManager:
         self.selected_organization = "organization"
         self.selected_facility = "facility"
         
-        self.load_default_config()
+        self.load_default_endpoints()
         self.load_user_config()
         
-    def load_default_config(self):
+    def load_default_endpoints(self):
         """Load default configuration from JSON file"""
         try:
             if os.path.exists(self.config_file):
                 with open(self.config_file, 'r') as f:
                     config_data = json.load(f)
-                    self.default_config = config_data.get('default_config', {})
+                    self.default_endpoints = config_data.get('default_endpoints', {})
                     self.base_url = config_data.get('base_url', 'https://api.example.com')
                     self.default_headers = config_data.get('default_headers', {
                         'Content-Type': 'application/json',
@@ -43,7 +43,6 @@ class ConfigurationManager:
                     # Extract shared token from default headers if available
                     if 'Authorization' in self.default_headers:
                         self.shared_token = self.default_headers['Authorization']
-                    
                     # Extract organization and facility from default headers if available
                     if 'SelectedOrganization' in self.default_headers:
                         self.selected_organization = self.default_headers['SelectedOrganization']
@@ -51,7 +50,7 @@ class ConfigurationManager:
                         self.selected_facility = self.default_headers['SelectedLocation']
             else:
                 st.warning(f"Configuration file {self.config_file} not found. Using empty default config.")
-                self.default_config = {}
+                self.default_endpoints = {}
                 self.base_url = 'https://api.example.com'
                 self.default_headers = {
                     'Content-Type': 'application/json',
@@ -59,7 +58,7 @@ class ConfigurationManager:
                 }
         except Exception as e:
             st.error(f"Error loading configuration file: {e}")
-            self.default_config = {}
+            self.default_endpoints = {}
             self.base_url = 'https://api.example.com'
             self.default_headers = {
                 'Content-Type': 'application/json',
@@ -69,8 +68,7 @@ class ConfigurationManager:
     def load_user_config(self):
         """Load user-customized configuration from session state"""
         # Load from session state
-        self.user_config = st.session_state.get('user_endpoint_config', {})
-        
+        self.user_config = st.session_state.get('user_endpoint_config', self.default_endpoints)
         # Load other settings from session state
         self.base_url = st.session_state.get('base_url', self.base_url)
         self.shared_token = st.session_state.get('shared_token', self.shared_token)
@@ -101,8 +99,8 @@ class ConfigurationManager:
         # Check user config first, then fall back to default
         if template_name in self.user_config:
             config = deepcopy(self.user_config[template_name])
-        elif template_name in self.default_config:
-            config = deepcopy(self.default_config[template_name])
+        elif template_name in self.default_endpoints:
+            config = deepcopy(self.default_endpoints[template_name])
         else:
             # Return a basic default if template not found
             config = {
@@ -150,18 +148,14 @@ class ConfigurationManager:
     def get_all_templates(self) -> list:
         """Get list of all available templates from both default and user config"""
         all_templates = set()
-        all_templates.update(self.default_config.keys())
+        all_templates.update(self.default_endpoints.keys())
         all_templates.update(self.user_config.keys())
         return sorted(list(all_templates))
     
     def has_custom_config(self, template_name: str) -> bool:
         """Check if template has custom user configuration"""
         return template_name in self.user_config
-    
-    def export_user_config(self) -> str:
-        """Export user configuration as JSON string (endpoint configs only - for backward compatibility)"""
-        return json.dumps(self.user_config, indent=2)
-    
+        
     def export_full_config(self) -> str:
         """Export complete configuration including global settings and endpoint configurations"""
         full_config = {
@@ -175,53 +169,22 @@ class ConfigurationManager:
             },
             "endpoint_configurations": self.user_config        }
         return json.dumps(full_config, indent=2)
-    
-    def import_user_config(self, config_json: str) -> bool:
-        """
-        Import user configuration from JSON string
-        Supports both legacy endpoint-only format and new full configuration format
         
-        Args:
-            config_json: JSON string with configuration
-            
-        Returns:
-            True if successful, False if error
-        """
-        try:
-            imported_config = json.loads(config_json)
-            
-            # Check if this is the new full configuration format
-            if isinstance(imported_config, dict) and "version" in imported_config:
-                return self._import_full_config(imported_config)
-            else:
-                # Legacy format - endpoint configurations only
-                return self._import_endpoint_configs_only(imported_config)
-                
-        except Exception as e:
-            st.error(f"Error importing configuration: {e}")
-            return False
-    
     def _import_full_config(self, config_data: dict) -> bool:
-        """Import full configuration format (version 2.0+)"""
+        print('running fulle import')
         try:
-            version = config_data.get("version", "1.0")
-            
-            # Import global settings if present
-            if "global_settings" in config_data:
-                global_settings = config_data["global_settings"]
-                
-                if "base_url" in global_settings:
-                    self.base_url = global_settings["base_url"]
-                if "shared_token" in global_settings:
-                    self.shared_token = global_settings["shared_token"]
-                if "selected_organization" in global_settings:
-                    self.selected_organization = global_settings["selected_organization"]
-                if "selected_facility" in global_settings:
-                    self.selected_facility = global_settings["selected_facility"]
+            if "base_url" in config_data:
+                self.base_url = config_data["base_url"]
+            if "Authorization" in config_data['default_headers']:
+                self.shared_token = config_data['default_headers']['Authorization']
+            if "SelectedOrganization" in config_data['default_headers']:
+                self.selected_organization = config_data['default_headers']["SelectedOrganization"]
+            if "SelectedLocation" in config_data['default_headers']:
+                self.selected_facility = config_data['default_headers']["SelectedLocation"]
             
             # Import endpoint configurations if present
-            if "endpoint_configurations" in config_data:
-                endpoint_configs = config_data["endpoint_configurations"]
+            if "default_endpoints" in config_data:
+                endpoint_configs = config_data["default_endpoints"]
                 # Validate endpoint configurations
                 for template_name, config in endpoint_configs.items():
                     if not isinstance(config, dict):
@@ -291,7 +254,7 @@ class ConfigurationManager:
             del st.session_state.selected_facility
         
         # Reset to defaults
-        self.load_default_config()
+        self.load_default_endpoints()
     
     def get_base_url(self) -> str:
         """Get the base URL for API endpoints"""

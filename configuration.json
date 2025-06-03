@@ -8,7 +8,7 @@
     "SelectedOrganization":"organization",
     "SelectedLocation":"facility"
   },
-  "default_config": {
+  "default_endpoints": {
     "facility": {
       "endpoint": "/xint/api/async/outbound/send?messageType=ANY_FAC_ImportFacilities",
       "method": "POST",
