@@ -1,6 +1,7 @@
 {
   "StaticFields": {
     "OrderType": "B2C",
+    "OriginFacilityId": "MA-DEV-L2",
     "DestinationAddress.Country": "US",
     "BillingMethodId": "Prepaid",
     "MinimumStatus": "1000",
@@ -20,18 +21,6 @@
     {
       "FieldName": "CustomerId",
       "FieldType": "string(10)"
-    },
-    {
-      "FieldName": "OrgId",
-      "FieldType": "choice(MANH-DEV-L2,CM_STORE_000001,CM_STORE_000002,CM_STORE_000003)"
-    },
-    {
-      "FieldName": "FacilityId",
-      "FieldType": "choice(MANH-DEV-L2,CM_STORE_000001,CM_STORE_000002,CM_STORE_000003)"
-    },
-    {
-      "FieldName": "OriginFacilityId",
-      "FieldType": "choice(MANH-DEV-L2,CM_STORE_000001,CM_STORE_000002,CM_STORE_000003)"
     },
     {
       "FieldName": "OrderPlacedDateTime",
@@ -75,11 +64,7 @@
     },
     {
       "FieldName": "DestinationAddress.PostalCode",
-      "FieldType": "string(5)"
-    },
-    {
-      "FieldName": "DestinationAddress.Phone",
-      "FieldType": "string(10)"
+      "FieldType": "int(5)"
     },
     {
       "FieldName": "DestinationAddress.Email",

@@ -30,11 +30,11 @@
     },
     {
       "FieldName": "FacilityAddress.PostalCode",
-      "FieldType": "string(5)"
+      "FieldType": "int(5)"
     },
     {
       "FieldName": "FacilityAddress.Phone",
-      "FieldType": "string(10)"
+      "FieldType": "int(10)"
     }
   ],
   "LinkedFields": {

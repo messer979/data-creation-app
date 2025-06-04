@@ -137,12 +137,12 @@ def guide_modal():
         ```
         - When defined, `AsnLine.ItemId` automatically applies to all array elements
         - No need to manually specify `AsnLine.0.ItemId`, `AsnLine.1.ItemId`
-        
-        ### Field Types:
+          ### Field Types:
         - `int(min,max)` - Random integer
         - `float(min,max,precision)` - Random decimal with specified precision
         - `string(length)` - Random alphanumeric string
         - `choice(opt1,opt2,opt3)` - Random selection from options
+        - `choiceUnique(opt1,opt2,opt3)` - Unique selection within array siblings (auto-fallback when exhausted)
         - `datetime(now|future|past)` - Date/time generation
         - `boolean` - True/false values
         - `uuid` - UUID string generation

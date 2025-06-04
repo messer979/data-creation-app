@@ -1,69 +1,69 @@
 {
-  "StaticFields": {
-    "AsnLevelId": "LPN",
-    "AsnOriginTypeId": "P",
-    "VerificationAttempted": false,
-    "Canceled": false,
-    "AsnStatus": "1000",
-    "Lpn.LpnStatus": "1000",
-    "Lpn.LpnTypeId": "ILPN",
-    "Lpn.ItemAttributesValidated": true,
-    "Lpn.SingleItemLpn": true,
-    "Lpn.Canceled": false,
-    "Lpn.LpnDetail.QuantityUomId": "Unit",
-    "Lpn.LpnDetail.LpnDetailStatus": "1000"
-  },
-  "DynamicFields": {
-    "AsnId": "CM_ASN_LPN",
-    "Lpn.LpnId": "CM_LPN"
-  },  "ArrayLengths": {
-    "Lpn": 10,
-    "Lpn.LpnDetail": 1,
-    "ShipmentAsnAssociation": 1
-  },
-  "RandomFields": [
-    {
-      "FieldName": "DestinationFacilityId",
-      "FieldType": "choice(MANH-DEV-L2,CM_STORE_000001,CM_STORE_000002,CM_STORE_000003)"
-    },    {
-      "FieldName": "EstimatedWeight",
-      "FieldType": "float(1,50,2)"
+    "StaticFields": {
+        "AsnLevelId": "LPN",
+        "DestinationFacilityId": "DEMO-FAC-01",
+        "AsnOriginTypeId": "P",
+        "VerificationAttempted": false,
+        "Canceled": false,
+        "AsnStatus": "1000",
+        "Lpn.LpnStatus": "1000",
+        "Lpn.LpnTypeId": "ILPN",
+        "Lpn.ItemAttributesValidated": true,
+        "Lpn.SingleItemLpn": true,
+        "Lpn.Canceled": false,
+        "Lpn.LpnDetail.QuantityUomId": "Unit",
+        "Lpn.LpnDetail.LpnDetailStatus": "1000"
     },
-    {
-      "FieldName": "PreDeterminedLpnCount",
-      "FieldType": "int(10,200)"
-    },    {
-      "FieldName": "EstimatedVolume",
-      "FieldType": "float(0.1,10,2)"
+    "DynamicFields": {
+        "AsnId": "CM_ASN_LPN",
+        "Lpn.LpnId": "CM_LPN"
     },
-    {
-      "FieldName": "EstimatedReceiptDate",
-      "FieldType": "datetime(future)"
+    "ArrayLengths": {
+        "Lpn": 10,
+        "Lpn.LpnDetail": 1,
+        "ShipmentAsnAssociation": 1
     },
-    {
-      "FieldName": "EstimatedDeliveryDate",
-      "FieldType": "datetime(future)"
-    },
-    {
-      "FieldName": "ShipmentAsnAssociation.ShipmentId",
-      "FieldType": "string(10)"
-    },
-    {
-      "FieldName": "Lpn.LpnDetail.LpnDetailId",
-      "FieldType": "uuid"
-    },
-    {
-      "FieldName": "Lpn.LpnDetail.ItemId",
-      "FieldType": "string(12)"
-    },
-    {
-      "FieldName": "Lpn.LpnDetail.ShippedQuantity",
-      "FieldType": "int(10,500)"
+    "RandomFields": [
+        {
+            "FieldName": "EstimatedWeight",
+            "FieldType": "float(1,50,2)"
+        },
+        {
+            "FieldName": "PreDeterminedLpnCount",
+            "FieldType": "int(10,200)"
+        },
+        {
+            "FieldName": "EstimatedVolume",
+            "FieldType": "float(0.1,10,2)"
+        },
+        {
+            "FieldName": "EstimatedReceiptDate",
+            "FieldType": "datetime(future)"
+        },
+        {
+            "FieldName": "EstimatedDeliveryDate",
+            "FieldType": "datetime(future)"
+        },
+        {
+            "FieldName": "ShipmentAsnAssociation.ShipmentId",
+            "FieldType": "string(10)"
+        },
+        {
+            "FieldName": "Lpn.LpnDetail.LpnDetailId",
+            "FieldType": "uuid"
+        },
+        {
+            "FieldName": "Lpn.LpnDetail.ItemId",
+            "FieldType": "string(12)"
+        },
+        {
+            "FieldName": "Lpn.LpnDetail.ShippedQuantity",
+            "FieldType": "int(10,500)"
+        }
+    ],
+    "LinkedFields": {
+        "AsnId": [
+            "ShipmentAsnAssociation.AsnId"
+        ]
     }
-  ],
-  "LinkedFields": {
-    "AsnId": [
-      "ShipmentAsnAssociation.AsnId"
-    ]
-  }
 }

@@ -71,9 +71,33 @@ def display_api_results(api_results: List[Dict]):
     for result in api_results:
         batch_info = result['result']
         if batch_info['success']:
-            st.success(f"✅ Batch {result['batch']}: {result['size']} records sent successfully")
-            if 'response_time' in batch_info:
-                st.caption(f"Response time: {batch_info['response_time']:.2f}s")
+            # Create expandable section for successful batches
+            with st.expander(f"✅ Batch {result['batch']}: {result['size']} records sent successfully", expanded=False):
+                # Show response time if available
+                if 'response_time' in batch_info:
+                    st.caption(f"Response time: {batch_info['response_time']:.2f}s")
+                
+                # Show status code if available
+                if 'status_code' in batch_info:
+                    st.caption(f"Status code: {batch_info['status_code']}")
+                
+                # Show trace ID if available in response headers
+                if 'response_headers' in batch_info and batch_info['response_headers']:
+                    trace_id = batch_info['response_headers'].get('cp-trace-id')
+                    if trace_id:
+                        st.caption(f"Trace ID: {trace_id}")
+                
+                # Display the API response JSON
+                if 'response' in batch_info:
+                    st.subheader("API Response")
+                    if batch_info['response']:
+                        # Format and display the JSON response
+                        import json
+                        st.code(json.dumps(batch_info['response'], indent=2), language='json')
+                    else:
+                        st.info("No response body returned")
+                else:
+                    st.info("No response data available")
         else:
             st.error(f"❌ Batch {result['batch']}: {batch_info.get('error', 'Unknown error')}")
             if batch_info.get('status_code'):

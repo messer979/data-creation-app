@@ -228,12 +228,21 @@ def generate_random_value(field_type: str) -> Any:
                 days_ahead = random.randint(1, 365)
                 future_date = datetime.now() + timedelta(days=days_ahead)
                 return future_date.isoformat()
-    
     elif field_type.startswith('choice('):
         # choice(option1,option2,option3) - with whitespace handling
         match = re.match(r'choice\(\s*([^)]+)\s*\)', field_type)
         if match:
             choices = [choice.strip() for choice in match.group(1).split(',')]
+            return random.choice(choices)
+    
+    elif field_type.startswith('choiceUnique('):
+        # choiceUnique(option1,option2,option3) - with whitespace handling
+        # Note: This function signature will be updated to support uniqueness context
+        match = re.match(r'choiceUnique\(\s*([^)]+)\s*\)', field_type)
+        if match:
+            choices = [choice.strip() for choice in match.group(1).split(',')]
+            # For now, return a random choice. The uniqueness logic will be handled
+            # in the array processing functions that call this with additional context.
             return random.choice(choices)
     
     elif field_type == 'uuid':
@@ -243,9 +252,54 @@ def generate_random_value(field_type: str) -> Any:
         domains = ['example.com', 'test.com', 'demo.org']
         username = ''.join(random.choices(string.ascii_lowercase, k=8))
         return f"{username}@{random.choice(domains)}"
-    
-    # Default fallback
+      # Default fallback
     return f"RANDOM_{random.randint(1000, 9999)}"
+
+
+def generate_random_value_with_context(field_type: str, unique_context: Dict[str, set] = None, 
+                                     field_path: str = None, array_path: str = None) -> Any:
+    """
+    Generate a random value based on field type specification with uniqueness context
+    
+    Args:
+        field_type: Type specification string (e.g., "float(2,3)", "string(12)", "boolean", "choiceUnique(a,b,c)")
+        unique_context: Dictionary tracking used values for choiceUnique fields per array context
+        field_path: Full path of the field being generated (for uniqueness tracking)
+        array_path: Path of the containing array (for uniqueness scope)
+    
+    Returns:
+        Generated random value
+    """
+    # Handle choiceUnique with context
+    if field_type.startswith('choiceUnique(') and unique_context is not None and field_path and array_path:
+        match = re.match(r'choiceUnique\(\s*([^)]+)\s*\)', field_type)
+        if match:
+            choices = [choice.strip() for choice in match.group(1).split(',')]
+            
+            # Create a unique key for this field within this array context
+            context_key = f"{array_path}.{field_path}"
+            
+            # Initialize the used set if not exists
+            if context_key not in unique_context:
+                unique_context[context_key] = set()
+            
+            # Get unused choices
+            used_values = unique_context[context_key]
+            unused_choices = [choice for choice in choices if choice not in used_values]
+            
+            # If we have unused choices, use one
+            if unused_choices:
+                selected_value = random.choice(unused_choices)
+                unique_context[context_key].add(selected_value)
+                return selected_value
+            else:
+                # All choices have been used, start reusing (fallback behavior)
+                selected_value = random.choice(choices)
+                return selected_value
+    
+    # For all other types (including regular choice and choiceUnique without context), 
+    # fall back to the standard generate_random_value function
+    return generate_random_value(field_type)
 
 
 def generate_linked_value(source_value: str, linked_field: str) -> str:
@@ -357,8 +411,12 @@ def create_record_from_template(base_template: Dict[str, Any],
     
     Returns:
         Generated record
-    """    # Start with a deep copy of the base template
+    """    
+    # Start with a deep copy of the base template
     record = deep_copy_template(base_template)
+    
+    # Initialize unique context for choiceUnique fields
+    unique_context = {}
     
     # Get array lengths configuration
     array_lengths = generation_template.get('ArrayLengths', {})
@@ -392,7 +450,7 @@ def create_record_from_template(base_template: Dict[str, Any],
     
     # Apply random fields with array handling
     if 'RandomFields' in generation_template:
-        record = apply_random_fields_with_arrays(record, generation_template['RandomFields'], array_lengths)
+        record = apply_random_fields_with_arrays(record, generation_template['RandomFields'], array_lengths, unique_context)
     
     # Apply linked fields with array handling
     if 'LinkedFields' in generation_template:
@@ -548,6 +606,92 @@ def apply_to_nested_arrays(record: Dict[str, Any], array_path: str, field_suffix
     navigate_and_apply(record, path_parts)
 
 
+def apply_to_nested_arrays_with_unique_context(record: Dict[str, Any], array_path: str, field_suffix: str, 
+                                              field_type: str, unique_context: Dict[str, set]) -> None:
+    """
+    Apply random values with uniqueness context to nested array elements at the specified path.
+    Supports up to 4 levels of nested arrays. For choiceUnique fields, ensures uniqueness within sibling arrays.
+    
+    Args:
+        record: The record to modify
+        array_path: The path to the array (e.g., "Lpn.LpnDetail")
+        field_suffix: The field path within each array element
+        field_type: The field type specification (e.g., "choiceUnique(a,b,c)")
+        unique_context: Dictionary tracking used values for choiceUnique fields per array context
+    """
+    # Split the array path into parts
+    path_parts = array_path.split('.')
+    
+    def navigate_and_apply_unique(current_obj, parts_remaining, current_array_path="", depth=0):
+        if depth > 4:  # Safety limit for recursion
+            return
+            
+        if len(parts_remaining) == 1:
+            # We're at the parent of the final array - navigate to the array itself
+            final_array_name = parts_remaining[0]
+            final_array_path = f"{current_array_path}.{final_array_name}" if current_array_path else final_array_name
+            
+            if isinstance(current_obj, dict) and final_array_name in current_obj:
+                final_array = current_obj[final_array_name]
+                if isinstance(final_array, list):
+                    # Apply to all elements in the final array with unique context
+                    for element in final_array:
+                        if isinstance(element, dict):
+                            value = generate_random_value_with_context(
+                                field_type, unique_context, field_suffix, final_array_path
+                            )
+                            set_nested_field(element, field_suffix, value)
+            elif isinstance(current_obj, list):
+                # Current object is an array, apply to final array in each element
+                for i, element in enumerate(current_obj):
+                    if isinstance(element, dict) and final_array_name in element:
+                        final_array = element[final_array_name]
+                        if isinstance(final_array, list):
+                            # Each parent array element gets its own unique context
+                            element_array_path = f"{current_array_path}[{i}].{final_array_name}"
+                            for sub_element in final_array:
+                                if isinstance(sub_element, dict):
+                                    value = generate_random_value_with_context(
+                                        field_type, unique_context, field_suffix, element_array_path
+                                    )
+                                    set_nested_field(sub_element, field_suffix, value)
+            return
+        
+        # Navigate to the next level (not the final array yet)
+        next_part = parts_remaining[0]
+        remaining_parts = parts_remaining[1:]
+        next_array_path = f"{current_array_path}.{next_part}" if current_array_path else next_part
+        
+        if isinstance(current_obj, dict) and next_part in current_obj:
+            current_level = current_obj[next_part]
+            if isinstance(current_level, list):
+                # Current level is an array, iterate through its elements
+                for i, element in enumerate(current_level):
+                    if isinstance(element, dict):
+                        element_array_path = f"{next_array_path}[{i}]"
+                        navigate_and_apply_unique(element, remaining_parts, element_array_path, depth + 1)
+            else:
+                # Current level is a single object
+                navigate_and_apply_unique(current_level, remaining_parts, next_array_path, depth + 1)
+        elif isinstance(current_obj, list):
+            # Current object is already an array, process each element
+            for i, element in enumerate(current_obj):
+                if isinstance(element, dict) and next_part in element:
+                    next_level = element[next_part]
+                    element_array_path = f"{current_array_path}[{i}].{next_part}"
+                    if isinstance(next_level, list):
+                        # Navigate into the next array level
+                        for j, sub_element in enumerate(next_level):
+                            if isinstance(sub_element, dict):
+                                sub_element_array_path = f"{element_array_path}[{j}]"
+                                navigate_and_apply_unique(sub_element, remaining_parts, sub_element_array_path, depth + 1)
+                    else:
+                        navigate_and_apply_unique(next_level, remaining_parts, element_array_path, depth + 1)
+    
+    # Start navigation from the record
+    navigate_and_apply_unique(record, path_parts)
+
+
 def expand_nested_array(record: Dict[str, Any], array_path: str, array_length: int) -> None:
     """
     Expand a nested array (e.g., Lpn.LpnDetail) to the specified length.
@@ -625,8 +769,12 @@ def create_record_from_template(base_template: Dict[str, Any],
     
     Returns:
         Generated record
-    """    # Start with a deep copy of the base template
+    """    
+    # Start with a deep copy of the base template
     record = deep_copy_template(base_template)
+    
+    # Initialize unique context for choiceUnique fields
+    unique_context = {}
     
     # Get array lengths configuration
     array_lengths = generation_template.get('ArrayLengths', {})
@@ -660,7 +808,7 @@ def create_record_from_template(base_template: Dict[str, Any],
     
     # Apply random fields with array handling
     if 'RandomFields' in generation_template:
-        record = apply_random_fields_with_arrays(record, generation_template['RandomFields'], array_lengths)
+        record = apply_random_fields_with_arrays(record, generation_template['RandomFields'], array_lengths, unique_context)
     
     # Apply linked fields with array handling
     if 'LinkedFields' in generation_template:
@@ -968,7 +1116,8 @@ def apply_to_nested_arrays_with_index(record: Dict[str, Any], array_path: str, f
 
 def apply_random_fields_with_arrays(record: Dict[str, Any], 
                                   random_fields: List[Dict[str, str]],
-                                  array_lengths: Dict[str, int]) -> Dict[str, Any]:
+                                  array_lengths: Dict[str, int],
+                                  unique_context: Dict[str, set] = None) -> Dict[str, Any]:
     """
     Apply random field values to a record, handling multi-level array fields by iterating over array elements
     
@@ -976,10 +1125,15 @@ def apply_random_fields_with_arrays(record: Dict[str, Any],
         record: The record to modify
         random_fields: List of field specifications with FieldName and FieldType
         array_lengths: Dictionary of array_name -> length mappings
+        unique_context: Dictionary tracking used values for choiceUnique fields per array context
     
     Returns:
         Modified record
     """
+    # Initialize unique context if not provided
+    if unique_context is None:
+        unique_context = {}
+    
     for field_spec in random_fields:
         field_name = field_spec['FieldName']
         field_type = field_spec['FieldType']
@@ -989,8 +1143,13 @@ def apply_random_fields_with_arrays(record: Dict[str, Any],
             array_path, field_suffix = find_array_path_and_suffix(field_name, array_lengths)
             
             if array_path:
-                # This is an array field - apply to all nested array elements with different random values
-                apply_to_nested_arrays(record, array_path, field_suffix, generate_random_value, field_type)
+                # This is an array field - check if it's a choiceUnique field
+                if field_type.startswith('choiceUnique('):
+                    # Use unique context functionality for choiceUnique fields
+                    apply_to_nested_arrays_with_unique_context(record, array_path, field_suffix, field_type, unique_context)
+                else:
+                    # Regular array field - apply to all nested array elements with different random values
+                    apply_to_nested_arrays(record, array_path, field_suffix, generate_random_value, field_type)
             else:
                 # Regular nested field
                 random_value = generate_random_value(field_type)

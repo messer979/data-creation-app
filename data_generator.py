@@ -88,13 +88,17 @@ class DataGenerator:
             payload = self._wrap_payload(data, template_config)
             
             response = requests.post(url, json=payload, headers=request_headers, timeout=30)
+            # print(response.request.body)
+            # print('\n')
+            # print(response.headers)
+            # print(response.json())
             response.raise_for_status()
 
-            
             return {
                 'success': True,
                 'status_code': response.status_code,
                 'response': response.json() if response.content else {},
+                'response_headers': dict(response.headers),
                 'response_time': response.elapsed.total_seconds()
             }
         except requests.exceptions.RequestException as e:
