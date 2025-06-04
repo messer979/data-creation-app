@@ -59,7 +59,7 @@ def render_template_selection(template_options: List[str]) -> str:
     # Clean up template names for display
     display_options = [name.replace('_', ' ').title() for name in template_options]
     display_options.sort()  # Sort display options alphabetically
-    selected_display = st.selectbox("Select Data Type", display_options, index=2)
+    selected_display = st.selectbox("Select Data Type", display_options, index=0)
     selected_template = template_options[display_options.index(selected_display)]
     
     return selected_template
