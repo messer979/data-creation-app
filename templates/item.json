@@ -2,10 +2,7 @@
     "PrimaryBarCode": "DEMO_ITEM_SKU01",
     "ShortDescription": "Item Description - DEMO_ITEM_SKU01",
     "Description": "DEMO_ITEM_SKU01",
-    "Extended": {
-        "CustomAttribute": null,
-        "KrogerAttr1": null
-    },
+    "Extended": {},
     "RetailPrice": 89889.0,
     "ShelfDays": 730,
     "MaximumReceiveToExpireDays": null,

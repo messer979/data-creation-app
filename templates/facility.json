@@ -8,9 +8,7 @@
     "FacilityTypeRail": false,
     "FacilityId": "CMSTORE03",
     "DirectDeliveryAllowed": false,
-    "Extended": {
-        "StoreOpenDate": null
-    },
+    "Extended": {},
     "Latitude": 33.8713,
     "Longitude": -84.4629,
     "IsActive": true,

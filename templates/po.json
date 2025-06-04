@@ -3,9 +3,7 @@
         "DeliveryStartDate": null,
         "OriginFacilityAliasId": null,
         "VendorId": "",
-        "Extended": {
-            "CustomPOType": null
-        },
+        "Extended": {},
         "PurchaseOrderStatus": "2000",        "OriginFacilityId": "DEMO-FAC-01",
         "DestinationFacilityId": "DEMO-FAC-01",
         "DestinationFacilityAliasId": null,

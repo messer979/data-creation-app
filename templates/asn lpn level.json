@@ -4,10 +4,7 @@
     "OriginFacilityId": null,
     "DestinationFacilityId": "DEMO-FAC-01",
     "AsnOriginTypeId": "P",
-    "Extended": {
-        "BolNumber": null,
-        "AsnType": null
-    },
+    "Extended": {},
     "EstimatedReceiptDate": null,
     "ReferenceShipmentId": null,
     "VerificationAttempted": false,
