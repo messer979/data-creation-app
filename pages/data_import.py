@@ -16,15 +16,14 @@ from components.sidebar import render_sidebar
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Production imports (commented out for testing)
-# from inventory_transfer import run_inventory_transfer, InventoryTransferLogger
+from scripts.inventory_transfer import run_inventory_transfer, InventoryTransferLogger
 
 # Test imports
-from test_inventory_transfer import TestActiveInventoryTransfer, TestInventoryTransferLogger, TransferConfig
-from components.app_components import render_sidebar
+# from test_inventory_transfer import TestActiveInventoryTransfer, TestInventoryTransferLogger, TransferConfig
 
 st.set_page_config(page_title="Data Import", page_icon="📥")
 st.title("📥 Data Import")
-
+st.warning("This page is for importing data between environments. It is not yet tested and will not work.")
 render_sidebar()
 
 st.markdown("Import and transfer data between environments")
