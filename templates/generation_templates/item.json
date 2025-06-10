@@ -5,6 +5,7 @@
     "DynamicFields": {
         "ItemId": "CM_ITEM"
     },
+    "ArrayLengths": {},
     "RandomFields": [
         {
             "FieldName": "Volume",

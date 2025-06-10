@@ -334,6 +334,35 @@ def deep_copy_template(obj: Any) -> Any:
         return obj
 
 
+def parse_array_length_value(value) -> int:
+    """
+    Parse array length value, supporting both static integers and random int() expressions
+    
+    Args:
+        value: The array length value - can be an integer or string like "int(1,10)"
+    
+    Returns:
+        Resolved integer length
+    """
+    if isinstance(value, int):
+        return value
+    
+    if isinstance(value, str):
+        # Check for int(min,max) pattern
+        match = re.match(r'int\(\s*(\d+)\s*,\s*(\d+)\s*\)', value.strip())
+        if match:
+            min_val, max_val = int(match.group(1)), int(match.group(2))
+            return random.randint(min_val, max_val)
+        
+        # Try to convert plain string to integer
+        try:
+            return int(value)
+        except ValueError:
+            raise ValueError(f"Invalid array length value: {value}. Must be an integer or 'int(min,max)' format.")
+    
+    raise ValueError(f"Invalid array length value type: {type(value)}. Must be an integer or string.")
+
+
 def expand_nested_array(record: Dict[str, Any], array_path: str, array_length: int) -> None:
     """
     Expand a nested array (e.g., Lpn.LpnDetail) to the specified length.
@@ -394,69 +423,6 @@ def expand_nested_array(record: Dict[str, Any], array_path: str, array_length: i
     
     # Start expansion from the record
     expand_at_path(record, path_parts)
-
-
-def create_record_from_template(base_template: Dict[str, Any], 
-                              generation_template: Dict[str, Any],
-                              index: int,
-                              dynamic_counters: Dict[str, int]) -> Dict[str, Any]:
-    """
-    Create a single record by applying generation template rules to base template
-    
-    Args:
-        base_template: Base JSON template structure
-        generation_template: Generation rules template
-        index: Record index (0-based)
-        dynamic_counters: Mutable dictionary tracking dynamic field counters
-    
-    Returns:
-        Generated record
-    """    
-    # Start with a deep copy of the base template
-    record = deep_copy_template(base_template)
-    
-    # Initialize unique context for choiceUnique fields
-    unique_context = {}
-    
-    # Get array lengths configuration
-    array_lengths = generation_template.get('ArrayLengths', {})
-      # Initialize arrays to the specified lengths before processing fields
-    for array_name, array_length in array_lengths.items():
-        if '.' in array_name:
-            # Handle nested arrays (e.g., "Lpn.LpnDetail")
-            expand_nested_array(record, array_name, array_length)
-        elif array_name in record and isinstance(record[array_name], list):
-            # Expand existing top-level array
-            current_length = len(record[array_name])
-            if current_length < array_length:
-                # Use the first element as a template for new elements
-                template_element = record[array_name][0] if current_length > 0 else {}
-                for i in range(current_length, array_length):
-                    record[array_name].append(deep_copy_template(template_element))
-            elif current_length > array_length:
-                # Truncate array if it's longer than needed
-                record[array_name] = record[array_name][:array_length]
-        elif array_name not in record:
-            # Create new top-level array with empty objects
-            record[array_name] = [{} for _ in range(array_length)]
-    
-    # Apply static fields with array handling
-    if 'StaticFields' in generation_template:
-        record = apply_static_fields_with_arrays(record, generation_template['StaticFields'], array_lengths)
-    
-    # Apply dynamic fields with array handling
-    if 'DynamicFields' in generation_template:
-        record = apply_dynamic_fields_with_arrays(record, generation_template['DynamicFields'], dynamic_counters, array_lengths)
-    
-    # Apply random fields with array handling
-    if 'RandomFields' in generation_template:
-        record = apply_random_fields_with_arrays(record, generation_template['RandomFields'], array_lengths, unique_context)
-    
-    # Apply linked fields with array handling
-    if 'LinkedFields' in generation_template:
-        record = apply_linked_fields_with_arrays(record, generation_template['LinkedFields'], array_lengths)
-    
-    return record
 
 
 def expand_fields_for_arrays(fields: Dict[str, Any], array_lengths: Dict[str, int]) -> Dict[str, Any]:
@@ -775,11 +741,13 @@ def create_record_from_template(base_template: Dict[str, Any],
     
     # Initialize unique context for choiceUnique fields
     unique_context = {}
-    
-    # Get array lengths configuration
+      # Get array lengths configuration
     array_lengths = generation_template.get('ArrayLengths', {})
       # Initialize arrays to the specified lengths before processing fields
-    for array_name, array_length in array_lengths.items():
+    for array_name, array_length_value in array_lengths.items():
+        # Parse the array length value (supports both integers and random int() expressions)
+        array_length = parse_array_length_value(array_length_value)
+        
         if '.' in array_name:
             # Handle nested arrays (e.g., "Lpn.LpnDetail")
             expand_nested_array(record, array_name, array_length)

@@ -4,6 +4,7 @@
     "Active": true,
     "CorporateVendor": false
   },
+  "ArrayLengths": {},
   "DynamicFields": {
     "VendorId": "CM_VENDOR"
   },
