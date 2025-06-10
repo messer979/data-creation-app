@@ -39,10 +39,9 @@ def render_template_selection(template_options: List[str]) -> str:
     if not template_options:
         st.error("No templates found! Please add JSON templates to the 'templates' directory.")
         return ""
-    
-    # Clean up template names for display
+      # Clean up template names for display
     display_options = [name.replace('_', ' ').title() for name in template_options]
-    # display_options.sort()  # Sort display options alphabetically
+    display_options.sort()  # Sort display options alphabetically
     selected_display = st.selectbox("Select Data Type", display_options)
     selected_template = template_options[display_options.index(selected_display)]
     
