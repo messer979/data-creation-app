@@ -7,8 +7,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from config_manager import ConfigurationManager
-from data_generator import DataGenerator
+from components.config_manager import ConfigurationManager
+from data_creation.data_generator import DataGenerator
 import json
 
 def test_ui_config_integration():

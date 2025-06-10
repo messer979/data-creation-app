@@ -1,3 +1,6 @@
 # .streamlit/config.toml
 [theme]
 base = "dark"
+
+[client]
+showSidebarNavigation = false

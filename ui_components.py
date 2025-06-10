@@ -11,35 +11,20 @@ import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Any
 from config import TEMPLATE_DEFAULTS, MAX_RECORDS, DEFAULT_RECORD_COUNT, DEFAULT_BATCH_SIZE, MAX_BATCH_SIZE
-from api_operations import display_api_results
-from endpoint_config_ui import render_endpoint_configuration_sidebar
-from template_guide_modal import guide_modal
-from bulk_template_manager import BulkTemplateManager
+from data_creation.api_operations import display_api_results
+from components.endpoint_config_ui import render_endpoint_configuration_sidebar
+from components.template_guide_modal import guide_modal
+from templates.bulk_template_manager import BulkTemplateManager
 
 
 
-def render_sidebar(config_manager):
+
+
+def render_endpoint_config_sidebar(config_manager):
     """
-    Render the sidebar with configuration options (global and endpoint config only)
+    Render the endpoint configuration sidebar
     """
-    with st.sidebar:        # Help button
-        if st.button("❓ Help", help="Open Help Guide for Data Creation Tool"):
-            guide_modal()
-        st.markdown("---")
-          # Template Management section
-        # Render endpoint configuration section
-        render_endpoint_configuration_sidebar(config_manager)
-
-
-        st.markdown("### 📦 Template Management")
-        
-        if st.button("🛠️ Template Manager", help="Open template management page", use_container_width=True):
-            st.session_state.show_template_manager_page = True
-            st.session_state.show_bulk_export = False
-            st.session_state.show_bulk_import = False
-            st.session_state.show_bulk_manager = False
-            st.rerun()
-        
+    render_endpoint_configuration_sidebar(config_manager)
 
 
 def render_template_selection(template_options: List[str]) -> str:

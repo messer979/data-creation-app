@@ -12,11 +12,11 @@ Refactored version with separated concerns:
 """
 
 import streamlit as st
-from data_generator import DataGenerator
+from data_creation.data_generator import DataGenerator
 from config import PAGE_CONFIG
-from config_manager import ConfigurationManager
-from ui_components import (
-    render_sidebar, 
+from components.config_manager import ConfigurationManager
+from components.app_components import (
+    render_endpoint_config_sidebar, 
     render_template_selection, 
     render_count_input,
     render_api_options,
@@ -24,8 +24,9 @@ from ui_components import (
     render_template_editor,
     render_bulk_template_manager_ui
 )
-from data_operations import handle_generate_button_click
-from endpoint_config_ui import render_endpoint_configuration_sidebar
+from components.sidebar import render_sidebar
+from data_creation.data_operations import handle_generate_button_click
+from components.endpoint_config_ui import render_endpoint_configuration_sidebar
 
 # Page configuration
 st.set_page_config(**PAGE_CONFIG)
@@ -53,7 +54,8 @@ def main():
             st.session_state.ace_theme = "github"
     except TypeError:
         st.session_state.ace_theme = "github"    # Render sidebar configuration
-    render_sidebar(
+    render_sidebar()
+    render_endpoint_config_sidebar(
         st.session_state.config_manager
     )
     

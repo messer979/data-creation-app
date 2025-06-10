@@ -3,7 +3,7 @@
 Test script for organization and facility functionality
 """
 
-from config_manager import ConfigurationManager
+from components.config_manager import ConfigurationManager
 
 def test_org_facility():
     """Test organization and facility functionality"""

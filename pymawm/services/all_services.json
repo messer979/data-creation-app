@@ -1,0 +1,769 @@
+{
+    "apt": {
+        "general_services": {
+            "appointment": "/appointment/api/appointment/appointment/",
+            "appointment_parameters": "/appointment/api/appointment/appointmentParameters/",
+            "appointment_template": "/appointment/api/appointment/appointmentTemplate/",
+            "appointment_schedules": "/appointment/api/appointment/appointmentSchedules/",
+            "asn": "/appointment/api/appointment/asn/",
+            "po": "/appointment/api/appointment/purchaseOrder/"
+        },
+        "search_services": {
+            "search_appointment_status": "/appointment/api/appointment/appointmentStatus/search",
+            "search_appointment_type": "/appointment/api/appointment/appointmentType/search",
+            "search_content_type": "/appointment/api/appointment/contentType/search"
+        },
+        "get_services": {
+            "get_appointment_status": "/appointment/api/appointment/appointmentStatus",
+            "get_appointment_type": "/appointment/api/appointment/appointmentType",
+            "get_content_type": "/appointment/api/appointment/contentType/"
+        }
+    },
+    "aux_": {
+        "general_services": {
+            "instruc": "/aux-svcs/api/aux-svcs/instruction/",
+            "instruc_type": "/aux-svcs/api/aux-svcs/instructionType/",
+            "prov_svc": "/aux-svcs/api/aux-svcs/providedService/",
+            "prov_svc_process": "/aux-svcs/api/aux-svcs/providedServiceProcess/",
+            "question": "/aux-svcs/api/aux-svcs/question/",
+            "reason_code": "/aux-svcs/api/aux-svcs/reasonCode/",
+            "assigned_questionnaire": "/api/fw-aux-svcs/assignedQuestionnaire/",
+            "assigned_instruction": "/api/fw-aux-svcs/assignedInstruction/",
+            "assigned_service": "/api/fw-aux-svcs/assignedService/"
+        }
+    },
+    "car": {
+        "general_services": {
+            "carrier": "/carrier/api/carrier/carrier/",
+            "mode": "/carrier/api/carrier/mode/",
+            "service_level": "/carrier/api/carrier/serviceLevel/",
+            "parcel_rate_shop_group": "/carrier/api/carrier/parcelRateShopGroup/",
+            "ship_via": "/carrier/api/carrier/carrierServiceLevelModeShipVia/"
+        }
+    },
+    "cfs": {
+        "general_services": {
+            "config_store": "/configstore/api/configstore/configStore/"
+        }
+    },
+    "common_services": {
+        "common_general_services": {
+            "c_application_parm": "/api/idempotency/applicationParameter/",
+            "c_assigned_instruction": "/api/fw-aux-svcs/assignedInstruction/",
+            "c_assigned_services": "/api/assignedServices/",
+            "c_available_attribute": "/api/rules/availableAttribute/",
+            "c_available_entity": "/api/rules/availableEntity/",
+            "c_available_entity_lookup": "/api/rules/availableEntityLookup/",
+            "c_error_message": "/api/errorHandler/errorMessage/",
+            "c_error_override": "/api/errorHandler/errorOverride/",
+            "c_event_action": "/api/eventProducer/eventAction/",
+            "c_event_action_details": "/api/eventProducer/eventActionDetails/",
+            "c_event_strategy": "/api/eventProducer/eventStrategy/",
+            "c_extension_handler": "/api/ServiceDefinition/extensionHandler/",
+            "c_extension_point": "/api/ServiceDefinition/extensionPoint/",
+            "c_inbound_message_type": "/api/ServiceDefinition/inBoundMessageType/",
+            "c_job": "/api/batch/jobSchedule/",
+            "c_nextup_config": "/api/nextup/nextUpConfiguration/",
+            "c_outbound_message_type": "/api/ServiceDefinition/outBoundMessageType/",
+            "c_pipelines": "/api/ServiceDefinition/pipeline/",
+            "c_response_template": "/api/fwcore/responseTemplate/",
+            "c_rule": "/api/rules/rule/",
+            "c_rule_action": "/api/rules/ruleAction/",
+            "c_rule_condition": "/api/rules/ruleCondition/",
+            "c_rule_group": "/api/rules/ruleGroup/",
+            "c_rule_group_rule_type_xref": "/api/rules/ruleGroupRuleTypeXref/",
+            "c_rule_type_avail_attr_xref": "/api/rules/ruleTypeAvailableAttributeXref/",
+            "c_rule_type_avail_entity_xref": "/api/rules/ruleTypeAvailableEntityXref/",
+            "c_service_definition": "/api/ServiceDefinition/serviceDefinition/",
+            "c_task": "/api/task/task/",
+            "c_task_creation_strat": "/api/task/taskCreationStrategy/",
+            "c_task_detail": "/api/task/taskDetail/",
+            "c_transactions": "/api/task/transaction/",
+            "c_transformer_template": "/api/transformer/transformerTemplate/"
+        },
+        "common_search_services": {
+            "search_c_entities_metadata": "/api/fwcore/entities/metadata/listMetadata/allEntities",
+            "search_c_import_template": "/api/importtemplate/importtTemplate/search",
+            "search_c_job_schedule": "/api/batch/jobSchedule/search",
+            "search_c_job_type_def": "/api/batch/jobTypeDefinition/search",
+            "search_c_log_level": "/api/logCategory/logLevel/search",
+            "search_c_message_log_level": "/api/errorHandler/messageLogLevel/search",
+            "search_c_processed_message": "/api/ServiceDefinition/processedMessage/search",
+            "search_c_task_status": "/api/task/taskStatus/search",
+            "search_c_task_detail_status": "/api/task/taskDetailStatus/search"
+        },
+        "common_get_services": {
+            "get_c_all_entities_metadata": "/api/fwcore/entities/metadata/listMetadata/allEntities",
+            "get_c_asciidoc": "/api/asciidoc",
+            "get_c_entities_metadata": "/api/fwcore/entities/metadata",
+            "get_c_extended_attr_history": "/api/fwcore/extendedAttributesHistory",
+            "get_c_feature_flags": "/internal/feature-flags/features/all",
+            "get_c_import_template": "/api/importtemplate/importTemplate",
+            "get_c_job_type": "/api/batch/getJobTypes",
+            "get_c_job_type_def": "/api/batch/getJobTypeDefinitions",
+            "get_c_log_level": "/api/logCategory/logLevel",
+            "get_c_mapping_doc_parent_entity_names": "/api/fwcore/interfaceDoc/entities",
+            "get_c_message_log_level": "/api/errorHandler/messageLogLevel",
+            "get_c_task_status": "/api/task/taskStatus/",
+            "get_c_task_detail_status": "/api/task/taskDetailStatus/"
+        },
+        "common_import_services": {
+            "trigger_c_job": "/api/batch/jobSchedule/trigger"
+        }
+    },
+    "cub": {
+        "general_services": {
+            "cubing_strategies": "/cubing/api/cubing/olpn/cubingStrategies/"
+        },
+        "get_services": {
+            "get_break_attributes": "/cubing/api/cubing/olpn/breakAttributes",
+            "get_container_type_ids": "/cubing/api/cubing/olpn/containerTypeIds",
+            "get_container_types": "/cubing/api/cubing/containerType",
+            "get_cubing_uom": "/cubing/api/cubing/cubingUom",
+            "get_cubing_wave_run_summ": "/cubing/api/cubing/cubingWaveRunSummary",
+            "get_lpn_cubing_method": "/cubing/api/cubing/olpnCubingMethod",
+            "get_pallet_break_attributes": "/cubing/api/cubing/pallet/breakAttributes",
+            "get_pallet_type_ids": "/cubing/api/cubing/pallet/containerTypeIds"
+        },
+        "search_services": {
+            "search_container_types": "/cubing/api/cubing/containerType/search",
+            "search_cubing_uom": "/cubing/api/cubing/cubingUom/search",
+            "search_cubing_wave_run_summ": "/cubing/api/cubing/cubingWaveRunSummary/search",
+            "search_lpn_cubing_method": "/cubing/api/cubing/olpnCubingMethod/search"
+        }
+    },
+    "dca": {
+        "general_services": {},
+        "get_services": {
+            "get_allocation_run": "/dcallocation/api/dcallocation/allocationRun",
+            "get_allocation_run_summary": "/dcallocation/api/dcallocation/allocationRunSummary",
+            "get_replenishment_request": "/dcallocation/api/dcallocation/replenishmentRequest",
+            "get_replenishment_inv_crit": "/dcallocation/api/dcallocation/replenishmentInventoryCriteria",
+            "get_replenishment_run": "/dcallocation/api/dcallocation/replenishmentRunStrategy",
+            "get_replenish_postpick": "/dcallocation/api/dcallocation/replenishPostPick",
+            "get_replenish_storage_crit": "/dcallocation/api/dcallocation/replenishStorageCriteria"
+        },
+        "search_services": {
+            "search_allocation_run": "/dcallocation/api/dcallocation/allocationRun/search",
+            "search_allocation_run_summary": "/dcallocation/api/dcallocation/allocationRunSummary/search",
+            "search_replenishment_request": "/dcallocation/api/dcallocation/replenishmentRequest/search",
+            "search_replenishment_inv_crit": "/dcallocation/api/dcallocation/replenishmentInventoryCriteria/search",
+            "search_replenish_storage_crit": "/dcallocation/api/dcallocation/replenishStorageCriteria/search",
+            "search_replenish_postpick": "/dcallocation/api/dcallocation/replenishPostPick/search",
+            "search_replenishment_run": "/dcallocation/api/dcallocation/replenishmentRunStrategy/search"
+        },
+        "import_services": {
+            "import_replenishment_request": "/dcallocation/api/dcallocation/replenishmentRequest/save"
+        }
+    },
+    "dcc": {
+        "general_services": {
+            "consolidation_crit": "/dcconsolidation/api/dcconsolidation/consolidationCriteria/",
+            "dedicated_by": "/dcconsolidation/api/stagingLocationAssignment/dedicatedBy/",
+            "dedicated_attr": "/dcconsolidation/api/stagingLocationAssignment/dedicatableAttribute/",
+            "lpn_loc_assignment": "/dcconsolidation/api/stagingLocationAssignment/lpnLocationAssignment/"
+        },
+        "get_services": {
+            "get_dedication_level": "/dcconsolidation/api/stagingLocationAssignment/dedicationLevel",
+            "get_dedication_config": "/dcconsolidation/api/stagingLocationAssignment/dedicationConfig",
+            "get_lpn_current_status": "/dcconsolidation/api/stagingLocationAssignment/lpnCurrentStatus"
+        },
+        "search_services": {
+            "search_dedication_level": "/dcconsolidation/api/stagingLocationAssignment/dedicationLevel/search",
+            "search_dedication_config": "/dcconsolidation/api/stagingLocationAssignment/dedicationConfig/search",
+            "search_lpn_current_status": "/dcconsolidation/api/stagingLocationAssignment/lpnCurrentStatus/search"
+        }
+    },
+    "dci": {
+        "general_services": {
+            "allocation": "/dcinventory/api/dcinventory/allocation/",
+            "attribute_statistics": "/dcinventory/api/dcinventory/attributeStatistics/",
+            "condition_code": "/dcinventory/api/dcinventory/conditionCode/",
+            "container_condition": "/dcinventory/api/dcinventory/containerCondition/",
+            "dock_door": "/dcinventory/api/dcinventory/dockDoor/",
+            "ilpn": "/dcinventory/api/dcinventory/ilpn/",
+            "inv": "/dcinventory/api/dcinventory/inventory/",
+            "inv_attributes": "/dcinventory/api/dcinventory/inventoryAttributes/",
+            "inventory_sync": "/dcinventory/api/dcinventory/inventorySync/",
+            "inventory_sync_batch": "/dcinventory/api/dcinventory/inventorySyncBatch/",
+            "location": "/dcinventory/api/dcinventory/location/",
+            "location_item_assignment": "/dcinventory/api/dcinventory/locationItemAssignment/",
+            "location_mask": "/dcinventory/api/dcinventory/locationMask/",
+            "location_template": "/dcinventory/api/dcinventory/locationTemplate/",
+            "location_wizard": "/dcinventory/api/dcinventory/locationWizard/",
+            "physical_entity_code": "/dcinventory/api/dcinventory/physicalEntityCode/",
+            "pix_level": "/dcinventory/api/dcinventory/pixLevel/",
+            "product_status": "/dcinventory/api/dcinventory/productStatus/",
+            "putaway_condition_code": "/dcinventory/api/dcinventory/putawayConditionCode/",
+            "quantity_conversion_uom": "/dcinventory/api/dcinventory/quantityConversionUomType/",
+            "recall_inventory_criteria": "/dcinventory/api/dcinventory/recallInventoryCriteria/",
+            "sku_dedication_type": "/dcinventory/api/dcinventory/skuDedicationType/",
+            "staging_location_type": "/dcinventory/api/dcinventory/stagingLocationType/",
+            "storage_location_type": "/dcinventory/api/dcinventory/storageLocationType/",
+            "storage_uom": "/dcinventory/api/dcinventory/storageUom/",
+            "yard_slot": "/dcinventory/api/dcinventory/yardSlot/",
+            "zone": "/dcinventory/api/dcinventory/zone/",
+            "zone_capacity": "/dcinventory/api/dcinventory/zoneCapacity/",
+            "zone_status": "/dcinventory/api/dcinventory/zoneStatus/",
+            "zone_type": "/dcinventory/api/dcinventory/zoneType/"
+        },
+        "search_services": {
+            "search_allocatable_inventory": "/dcinventory/api/dcinventory/allocatableInventory",
+            "search_ilpn_status_code": "/dcinventory/api/dcinventory/ilpnStatus/search",
+            "search_ilpn_inv": "/dcinventory/api/dcinventory/ilpn/ilpninventorysearch",
+            "search_inv_attributes_status": "/dcinventory/api/dcinventory/attributeStatus/search",
+            "search_inv_search": "/dcinventory/api/dcinventory/inventory/inventorysearch",
+            "search_inventory_by_loc": "/dcinventory/api/dcinventory/inventory/inventorysearchAggregateByLocation",
+            "search_item": "/dcinventory/api/itemlistener/item/search",
+            "search_task_status": "/dcinventory/api/task/taskStatus/search"
+        },
+        "get_services": {
+            "get_allocation": "/dcinventory/api/dcinventory/allocation/",
+            "get_ilpn_status_code": "/dcinventory/api/dcinventory/ilpnStatus/",
+            "get_inv_attributes_status": "/dcinventory/api/dcinventory/attributeStatus/",
+            "get_inv_search": "/dcinventory/api/dcinventory/inventory/inventorysearch/",
+            "get_inventory_by_loc": "/dcinventory/api/dcinventory/inventorysearchAggregateByLocation/",
+            "get_item": "/dcinventory/api/itemlistener/item/",
+            "get_task_status": "/dcinventory/api/task/taskStatus/"
+        },
+        "import_services": {
+            "post_load_allocatable_inventory": "/dcinventory/api/dcinventory/loadInventory/allocatableInventory",
+            "post_update_ilpn_and_inventory": "/dcinventory/api/dcinventory/ilpn/updateIlpnAndInventory",
+            "post_adjust_inventory": "/dcinventory/api/dcinventory/inventory/adjustInventory"
+        }
+    },
+    "dco": {
+        "general_services": {
+            "original_order": "/dcorder/api/dcorder/originalOrder/",
+            "order": "/dcorder/api/dcorder/order/",
+            "order_line": "/dcorder/api/dcorder/orderLine/",
+            "order_planning_run_strategy": "/dcorder/api/dcorder/orderPlanningRunStrategy/",
+            "order_planning_run_strategy_stream": "/dcorder/api/dcorder/OrderPlanningRunStrategyStream/",
+            "original_order_instruction": "/dcorder/api/dcorder/originalOrder/originalOrderInstruction/",
+            "original_order_line_instruction": "/dcorder/api/dcorder/originalOrder/originalOrderLine/originalOrderLineInstruction/"
+        },
+        "search_services": {
+            "search_order_failure": "/dcorder/api/dcorder/orderFailure/search",
+            "search_order_status": "/dcorder/api/dcorder/orderStatus/search",
+            "search_facility": "/dcorder/api/dcorder/facility/search"
+        },
+        "get_services": {
+            "get_order_status": "/dcorder/api/dcorder/orderStatus",
+            "get_order_failure": "/dcorder/api/dcorder/orderFailure/",
+            "get_facility": "/dcorder/api/dcorder/facility"
+        }
+    },
+    "dcs": {
+        "general_services": {
+            "seal_number": "/dcshipping/api/dcshipping/sealNumber/",
+            "shipping_parameter": "/dcshipping/api/dcshipping/shippingParameters/",
+            "unload_crit": "/dcshipping/api/dcshipping/unloadOlpnCriteria/"
+        },
+        "get_services": {
+            "get_shipment_entry": "/dcshipping/api/dcshipping/shipmentEntry",
+            "get_loading_entry": "/dcshipping/api/dcshipping/loadingEntry"
+        },
+        "search_services": {
+            "search_shipment_entry": "/dcshipping/api/dcshipping/shipmentEntry/search",
+            "search_loading_entry": "/dcshipping/api/dcshipping/loadingEntry/search"
+        }
+    },
+    "dei": {
+        "general_services": {
+            "collector_endpoint": "/device-integration/api/collector/collectorEndpoint/",
+            "endpoint": "/device-integration/api/deviceintegration/endpoint/",
+            "endpoint_group": "/device-integration/api/deviceintegration/endpointGroup/",
+            "enrichment_spec": "/device-integration/api/collector/enrichmentSpec/",
+            "override_data": "/device-integration/api/override/overrideData/",
+            "parser_template": "/device-integration/api/deviceintegration/parserType/",
+            "payload": "/device-integration/api/ServiceDefinition/payload/",
+            "payload_type": "/device-integration/api/deviceintegration/payloadMessageType/",
+            "routing_strategy": "/device-integration/api/deviceintegration/routingStrategy/",
+            "splitter_spec": "/device-integration/api/deviceintegration/splitterSpec/",
+            "subscriber": "/device-integration/api/deviceintegration/subscriber/",
+            "transformer_bind_var": "/device-integration/api/deviceintegration/transformerBindVariable/",
+            "transport": "/device-integration/api/deviceintegration/transport/"
+        },
+        "search_services": {
+            "search_journal": "/device-integration/api/device-integration/journalEntry/search"
+        },
+        "get_services": {},
+        "import_services": {
+            "update_endpoint_status": "/device-integration/api/deviceintegration/endpoint/updateStatus"
+        }
+    },
+    "dmu": {
+        "search_services": {},
+        "general_services": {}
+    },
+    "fac": {
+        "general_services": {
+            "facility": "/facility/api/facility/facility/",
+            "facility_alias": "/facility/api/facility/facility/facilityAlias/",
+            "facility_config": "/facility/api/facility/facilityConfig/",
+            "facility_contact": "/facility/api/facility/facility/facilityContact/",
+            "facility_dock": "/facility/api/facility/facility/facilityDock/",
+            "warehouse_yard": "/facility/api/facility/warehouseYard/"
+        },
+        "get_services": {},
+        "search_services": {}
+    },
+    "inm": {
+        "general_services": {
+            "audit_ilpn_criteria": "/inventory-management/api/inventory-management/auditIlpnCriteria/",
+            "blind_lpn_label_type": "/inventory-management/api/inventory-management/blindLpnLabelType/",
+            "condition_code_assign_criteria": "/inventory-management/api/inventory-management/conditionAssignCriteria/",
+            "consume_ilpn_criteria": "/inventory-management/api/inventory-management/consumeIlpnCriteria/",
+            "count_execution_criteria": "/inventory-management/api/inventory-management/countExecutionCriteria/",
+            "count_execution_strategy": "/inventory-management/api/inventory-management/countExecutionStrategy/",
+            "count_override_criteria": "/inventory-management/api/inventory-management/countOverrideCriteria/",
+            "create_execution_crit": "/inventory-management/api/inventory-management/createExecutionCriteria/",
+            "cycle_count_plan_criteria": "/inventory-management/api/inventory-management/cycleCountPlanCriteria/",
+            "document_template_type": "/inventory-management/api/docgeneration/documentTemplateType/",
+            "item_inquiry_criteria": "/inventory-management/api/inventory-management/itemInquiryCriteria/",
+            "item_override_criteria": "/inventory-management/api/inventory-management/itemOverrideCriteria/",
+            "location_inquiry_criteria": "/inventory-management/api/inventory-management/locationInquiryCriteria/",
+            "modify_execution_criteria": "/inventory-management/api/inventory-management/modifyExecutionCriteria/",
+            "palletize_lpn_criteria": "/inventory-management/api/inventory-management/palletizeIlpnCriteria/",
+            "recount_tolerance_strategy": "/inventory-management/api/inventory-management/recountToleranceStrategy/",
+            "split_combine_ilpn_criteria": "/inventory-management/api/inventory-management/splitCombineIlpnCriteria/",
+            "verify_uom_attr_criteria": "/inventory-management/api/inventory-management/verifyUomAttributeCriteria/"
+        },
+        "search_services": {
+            "search_blind_lpn_label_type": "/inventory-management/api/inventory-management/blindLpnLabelType/search",
+            "search_inventory_count": "/inventory-management/api/inventory-management/inventoryCountRun/containerCount/inventoryCount/search",
+            "search_inventory_count_attribute": "/inventory-management/api/inventory-management/inventoryCountRun/containerCount/inventoryCount/inventoryCountAttribute/search",
+            "search_inventory_count_nonunique_attribute": "/api/inventory-management/inventoryCountRun/containerCount/inventoryCount/inventoryCountNonUniqueAttribute/search",
+            "search_inventory_count_run": "/inventory-management/api/inventory-management/inventoryCountRun/search",
+            "search_inventory_count_variance": "/inventory-management/api/inventory-management/inventoryCountRun/containerCount/inventoryCountVariance/search"
+        },
+        "get_services": {
+            "get_inventory_count": "/inventory-management/api/inventory-management/inventoryCountRun/containerCount/inventoryCount",
+            "get_inventory_count_attribute": "/inventory-management/api/inventory-management/inventoryCountRun/containerCount/inventoryCount/inventoryCountAttribute",
+            "get_inventory_count_nonunique_attribute": "/api/inventory-management/inventoryCountRun/containerCount/inventoryCount/inventoryCountNonUniqueAttribute",
+            "get_inventory_count_run": "/inventory-management/api/inventory-management/inventoryCountRun",
+            "get_inventory_count_variance": "/inventory-management/api/inventory-management/inventoryCountRun/containerCount/inventoryCountVariance"
+        }
+    },
+    "itm": {
+        "general_services": {
+            "barcode_type": "/item-master/api/item-master/barcodeType/",
+            "barcode_format": "/item-master/api/item-master/barcodeFormat/",
+            "code_type": "/item-master/api/item-master/codeType/",
+            "hazmat": "/item-master/api/item-master/hazmat/",
+            "item_attribute": "/item-master/api/item-master/itemAttribute/",
+            "item": "/item-master/api/item-master/item/",
+            "item_code": "/item-master/api/item-master/itemCode/",
+            "item_facility": "/item-master/api/item-master/itemFacility/",
+            "standard_quantity_uom": "/item-master/api/item-master/standardQuantityUom/",
+            "standard_uom": "/item-master/api/item-master/standardUom/"
+        },
+        "search_services": {},
+        "get_services": {},
+        "import_services": {},
+        "delete_services": {},
+        "partial_update_services": {}
+    },
+    "lmc": {
+        "general_services": {
+            "activities": "/lmcore/api/lmcore/activity/",
+            "adjusted_events": "/lmcore/api/lmcore/adjustmentSummaryDetail/",
+            "adjusted_time_ranges": "/lmcore/api/lmcore/adjustmentSummary/",
+            "adjustment_codes": "/lmcore/api/lmcore/eventAdjustmentCode/",
+            "audit_logs": "/lmcore/api/lmcore/auditLog/",
+            "challenge_progress": "/lmincentivepay/api/lmincentivepay/employeeChallengeProgress/",
+            "consolidated_events": "/lmcore/api/lmcore/eventConsolidation/",
+            "dynamic_activity_strategies": "/lmcore/api/lmcore/dynamicActivityStrategy/",
+            "element_strategies": "/lmcore/api/lmcore/elementStrategy/",
+            "elements": "/lmcore/api/lmcore/elements/",
+            "employee_days": "/lmcore/api/lmcore/employeeDay/",
+            "employee_pay_records": "/lmincentivepay/api/lmincentivepay/employeePay/",
+            "employee_reflective_assignments": "/lmcore/api/lmcore/employeeReflectiveAssign/",
+            "employee_statuses": "/lmcore/api/lmcore/employeeStatus/",
+            "employee_training_curves": "/lmcore/api/lmcore/employeeTrainingCurve/",
+            "employee_types": "/lmcore/api/lmcore/employeeType/",
+            "error_logs": "/lmcore/api/lmcore/errorLog/",
+            "event_approvals": "/lmcore/api/lmcore/eventApprovals/",
+            "events": "/lmcore/api/lmcore/eventSummaryHeader/",
+            "facility_parameters": "/lmcore/api/lmcore/facilityConfigData/",
+            "groups": "/lmcore/api/lmcore/group/",
+            "handling_attribute_assignments": "/lmcore/api/lmcore/handlingAttrAssign/",
+            "handling_attributes": "/lmcore/api/lmcore/handlingAttribute/",
+            "hierarchies": "/lmcore/api/lmcore/hierarchy/",
+            "indirect_activities": "/lmcore/api/lmcore/activityIndirect/",
+            "interim_punches": "/lmcore/api/lmcore/interimPunches/",
+            "labor_estimates": "/lmcore/api/lmcore/laborEstimate/",
+            "labor_messages": "/lmcore/api/lmcore/laborMessage/",
+            "location_handling_attributes": "/lmcore/api/lmcore/locationHandlingAttr/",
+            "pfd_codes": "/lmcore/api/lmcore/pfdCodes/",
+            "punch_cards": "/lmcore/api/lmcore/punchCard/",
+            "quality_audit_data_entry": "/lmcore/api/lmcore/qualityAudit/",
+            "safety_incidents": "/lmcore/api/lmcore/safetyIncident/",
+            "scheduled_events": "/lmcore/api/lmcore/scheduledEvent/",
+            "scheduled_group_assignments": "/lmcore/api/lmcore/groupAssignmentSchedule/",
+            "shifts": "/lmcore/api/lmcore/shift/",
+            "training_groups": "/lmcore/api/lmcore/trainingGroup/",
+            "transition_groups": "/lmcore/api/lmcore/transitionGroup/",
+            "vehicle_types": "/lmcore/api/lmcore/vehicleType/",
+            "vehicles": "/lmcore/api/lmcore/vehicle/"
+        },
+        "search_services": {},
+        "get_services": {}
+    },
+    "lpd": {
+        "general_services": {
+            "disposition_crit": "/lpn-disposition/api/lpn-disposition/dispositionCriteria/",
+            "disposition_lpn": "/lpn-disposition/api/lpn-disposition/dispositionLpn/",
+            "disposition_process_crit": "/lpn-disposition/api/lpn-disposition/dispositionProcessCriteria/",
+            "disposition_mode": "/lpn-disposition/api/lpn-disposition/dispositionMode/",
+            "disposition_strategy": "/lpn-disposition/api/lpn-disposition/dispositionStrategy/",
+            "diversion_code": "/lpn-disposition/api/lpn-disposition/diversionCode/",
+            "flowthru_planning_strategy": "/lpn-disposition/api/lpn-disposition/flowthroughPlanningStrategy/",
+            "process_need": "/lpn-disposition/api/lpn-disposition/processNeed/",
+            "process_need_type": "/lpn-disposition/api/lpn-disposition/processNeedType/",
+            "process_type": "/lpn-disposition/api/lpn-disposition/processType/"
+        },
+        "search_services": {
+            "search_need_status": "/lpn-disposition/api/lpn-disposition/needStatus/search"
+        },
+        "get_services": {
+            "get_need_status": "/lpn-disposition/api/lpn-disposition/needStatus/search"
+        }
+    },
+    "org": {
+        "general_services": {
+            "business_unit": "/organization/api/organization/businessUnit/",
+            "grant": "/organization/api/organization/grant/",
+            "organization": "/organization/api/organization/organization/",
+            "org_user": "/organization/api/organization/orgUser/",
+            "password_policy_config": "/organization/api/organization/passwordPolicyConfig/",
+            "profile": "/organization/api/organization/profile/",
+            "provisioning_profile": "/organization/api/organization/provisioningProfile/",
+            "role": "/organization/api/organization/role/",
+            "user": "/organization/api/organization/user/",
+            "user_defaults": "/organization/api/organization/userDefaults/"
+        },
+        "search_services": {
+            "search_user_login_history": "/organization/api/organization/userLoginHistory/search"
+        },
+        "get_services": {
+            "get_user_login_history": "/organization/api/organization/userLoginHistory"
+        },
+        "import_services": {
+            "update_user_password": "/organization/api/organization/user/updatePassword"
+        },
+        "partial_update_services": {}
+    },
+    "pcl": {
+        "general_services": {
+            "carrier": "/parcel/api/parcel/carrier/",
+            "facility_carrier_account": "/parcel/api/parcel/facilityCarrierAccount/"
+        },
+        "search_services": {},
+        "get_services": {},
+        "partial_update_services": {}
+    },
+    "pix": {
+        "general_services": {
+            "pix_parameters": "/pix/api/pix/pixParameters/",
+            "pix_pixenrichment_strategy": "/pix/api/pix/pixEnrichmentStrategy/",
+            "pix_enrichment_strategy": "/pix/api/collector/enrichmentStrategy/",
+            "pix_enrichment_spec": "/pix/api/collector/enrichmentSpec/",
+            "pix_enrichment_spec_group": "/pix/api/collector/enrichmentSpecGroup/",
+            "pix_specification": "/pix/api/pix/pixSpecification/",
+            "pix_split_level": "/pix/api/pix/pixSplitLevel/"
+        },
+        "get_services": {
+            "get_action_code": "/pix/api/pix/getActionCode",
+            "get_group_crit_attr": "/pix/api/pix/groupingCriteriaAttribute",
+            "get_invn_sync_batch": "/pix/api/pix/inventorySyncBatch",
+            "get_invn_sync_batch_details": "/pix/api/pix/invSyncBatchDetails",
+            "get_pix_entry": "/pix/api/pix/pixEntry",
+            "get_pix_entry_attributes": "/pix/api/pix/pixEntryAttributes",
+            "get_pix_event": "/pix/api/pix/pixEvent",
+            "get_pix_status": "/pix/api/pix/pixStatus",
+            "get_pix_type": "/pix/api/pix/pixType",
+            "get_tran_type": "/pix/api/pix/getTransactionType"
+        },
+        "search_services": {
+            "search_invn_sync_batch": "/pix/api/pix/inventorySyncBatch/search",
+            "search_invn_sync_batch_details": "/pix/api/pix/invSyncBatchDetails/search",
+            "search_pix_entry": "/pix/api/pix/pixEntry/search",
+            "search_pix_entry_attributes": "/pix/api/pix/pixEntryAttributes/search",
+            "search_pix_event": "/pix/api/pix/pixEvent/search",
+            "search_pix_status": "/pix/api/pix/pixStatus/search",
+            "search_pix_type": "/pix/api/pix/pixType/search",
+            "search_tran_type": "/pix/api/pix/getTransactionType/search"
+        }
+    },
+    "ppk": {
+        "general_services": {
+            "add_lpn_to_order_crit": "/pickpack/api/pickpack/addLpnToOrderCriteria/",
+            "add_non_inv_olpn_crit": "/pickpack/api/pickpack/addNonInventoryOlpnCriteria/",
+            "audit_outbound_container_crit": "/pickpack/api/pickpack/auditOutboundContainerCriteria/",
+            "audit_planning_crit": "/pickpack/api/pickpack/auditPlanningCriteria/",
+            "container_type": "/pickpack/api/pickpack/containerType/",
+            "cancel_olpn_crit": "/pickpack/api/pickpack/cancelOlpnCriteria/",
+            "clear_outbound_sort_crit": "/pickpack/api/pickpack/clearObSortLocationCriteria/",
+            "dedicated_by": "/pickpack/api/stagingLocationAssignment/dedicatedBy/",
+            "document_template_type": "/pickpack/api/docgeneration/documentTemplateType/",
+            "make_pick_cart_crit": "/pickpack/api/pickpack/makePickCartCriteria/",
+            "olpn": "/pickpack/api/pickpack/olpn/",
+            "olpn_condition_code": "/pickpack/api/pickpack/olpnConditionCode/",
+            "olpn_condition_assign_crit": "/pickpack/api/pickpack/olpnConditionAssignCriteria/",
+            "olpn_palletize_crit": "/pickpack/api/pickpack/olpnPalletizeCriteria/",
+            "olpn_planning_crit": "/pickpack/api/pickpack/olpnPlanningCriteria/",
+            "olpn_planning_run": "/pickpack/api/pickpack/olpnPlanningRun/",
+            "olpn_planning_run_detail": "/pickpack/api/pickpack/olpnPlanningRunDetail/",
+            "olpn_status": "/pickpack/api/pickpack/olpnStatus/",
+            "ob_manual_sorter": "/pickpack/api/pickpack/obManualSorter/",
+            "ob_sort_loc_assignment": "/pickpack/api/pickpack/obSortLocationAssignment/",
+            "outbound_container_gen_crit": "/pickpack/api/pickpack/outboundContainerGenerationCriteria/",
+            "outbound_container_inquiry_crit": "/pickpack/api/pickpack/outboundContainerInquiryCriteria/",
+            "outbound_putaway_crit": "/pickpack/api/pickpack/outboundPutawayCriteria/",
+            "outbound_sort_crit": "/pickpack/api/pickpack/outboundSortCriteria/",
+            "outbound_unique_attr": "/pickpack/api/pickpack/outboundUniqueAttributes/",
+            "pack_crit": "/pickpack/api/pickpack/packCriteria/",
+            "pack_loc_det": "/pickpack/api/pickpack/packLocationDetermination/",
+            "pack_loc_det_crit": "/pickpack/api/pickpack/packLocationDeterminationCriteria/",
+            "pack_loc_det_strat": "/pickpack/api/pickpack/packLocationDeterminationStrategy/",
+            "pack_override_crit": "/pickpack/api/pickpack/packOverrideCriteria/",
+            "pick_crit": "/pickpack/api/pickpack/pickCriteria/",
+            "pick_override_crit": "/pickpack/api/pickpack/pickOverrideCriteria/",
+            "picking_container": "/pickpack/api/pickpack/pickingContainer/",
+            "print_crit": "/pickpack/api/pickpack/printCriteria/",
+            "print_criteria_doc_template_type_xref": "/pickpack/api/pickpack/printCriteriaDocTemplateTypeXref/",
+            "printer_type_doc_template_xref": "/pickpack/api/docprinting/printerTypeDocTemplateXref/",
+            "printer_doc_template_type": "/pickpack/api/pickpack/printDocTemplateType/",
+            "reason_code": "/pickpack/api/pickpack/reasonCode/",
+            "split_combine_olpn_crit": "/pickpack/api/pickpack/splitCombineOlpnCriteria/",
+            "track_number_generation_crit": "/pickpack/api/pickpack/trackingNumberGenerationCriteria/"
+        },
+        "search_services": {
+            "search_audit_status": "/pickpack/api/pickpack/auditStatus/search",
+            "search_olpn_creation_code": "/pickpack/api/pickpack/olpnCreationCode/search",
+            "search_olpn_dtl_status": "/pickpack/api/pickpack/olpnDetailStatus/search"
+        },
+        "get_services": {
+            "get_audit_status": "/pickpack/api/pickpack/auditStatus/",
+            "get_olpn_creation_code": "/pickpack/api/pickpack/olpnCreationCode/",
+            "get_olpn_dtl_status": "/pickpack/api/pickpack/olpnDetailStatus/",
+            "get_temp_file_names": "/pickpack/api/document/templateFileNames"
+        }
+    },
+    "ptw": {
+        "general_services": {
+            "putaway_execution_crit": "/putaway/api/putaway/putawayExecutionCriteria/",
+            "putaway_execution_strategy": "/putaway/api/putaway/putawayExecutionStrategy/",
+            "putaway_planning_crit": "/putaway/api/putaway/putawayPlanningCriteria/",
+            "putaway_planning_strategy": "/putaway/api/putaway/putawayPlanningStrategy/",
+            "radius_location_component": "/putaway/api/putaway/radiusLocationComponent/",
+            "reason_code": "/putaway/api/putaway/reasonCode/",
+            "putaway_source_attr": "/putaway/api/putaway/putawaySourceAttributes/"
+        },
+        "get_services": {},
+        "search_services": {}
+    },
+    "rcv": {
+        "general_services": {
+            "asn": "/receiving/api/receiving/asn/",
+            "asn_line": "/receiving/api/receiving/asnLine/",
+            "asn_line_attr": "/receiving/api/receiving/nonUniqueAsnLineAttribute/",
+            "document_template_type": "/receiving/api/docgeneration/documentTemplateType/",
+            "lpn": "/receiving/api/receiving/lpn/",
+            "po": "/receiving/api/receiving/purchaseOrder/",
+            "po_line": "/receiving/api/receiving/purchaseOrderLine/",
+            "process_need_crit": "/receiving/api/receiving/processNeedCriteria/",
+            "process_need_strategy": "/receiving/api/receiving/processNeedStrategy/",
+            "receipt": "/receiving/api/receiving/receipt/",
+            "receiving_crit": "/receiving/api/receiving/receivingCriteria/"
+        },
+        "search_services": {
+            "search_asn_level": "/receiving/api/receiving/asnLevel/search",
+            "search_asn_status": "/receiving/api/receiving/asnStatus/search"
+        },
+        "get_services": {
+            "get_asn_level": "/receiving/api/receiving/asnLevel",
+            "get_asn_status": "/receiving/api/receiving/asnStatus"
+        }
+    },
+    "rf": {
+        "search_services": {},
+        "get_services": {},
+        "import_services": {},
+        "general_services": {}
+    },
+    "shc": {
+        "general_services": {
+            "shipconfirm_parms": "/shipconfirm/api/shipconfirm/shipConfirmParameters/",
+            "asn_destination": "/shipconfirm/api/shipconfirm/asnDestinationType/",
+            "transformer_template": "/shipconfirm/api/transformer/transformerTemplate/"
+        },
+        "search_services": {
+            "search_outbound_asn": "/shipconfirm/api/shipconfirm/outboundAsn/search",
+            "search_shipconfirm_entry": "/shipconfirm/api/shipconfirm/shipConfirmEntry/search",
+            "search_shipconfirm_event_payload": "/shipconfirm/api/shipconfirm/shipConfirmEventPayload/search",
+            "search_shipconfirm_event": "/shipconfirm/api/shipconfirm/shipConfirmEvent/search"
+        },
+        "get_services": {
+            "get_outbound_asn": "/shipconfirm/api/shipconfirm/outboundAsn",
+            "get_shipconfirm_entry": "/shipconfirm/api/shipconfirm/shipConfirmEntry",
+            "get_shipconfirm_event_payload": "/shipconfirm/api/shipconfirm/shipConfirmEventPayload",
+            "get_shipconfirm_event": "/shipconfirm/api/shipconfirm/shipConfirmEvent",
+            "get_ship_confirm_status": "/shipconfirm/api/shipconfirm/partialShipConfirmStatus"
+        }
+    },
+    "shp": {
+        "general_services": {
+            "shipment": "/shipment/api/shipment/shipment/"
+        },
+        "search_services": {
+            "fetch_shipment": "/shipment/api/shipment/fetchOpenShipments",
+            "search_stop_action": "/shipment/api/shipment/stopAction/search",
+            "search_stop_status": "/shipment/api/shipment/stopStatus/search"
+        },
+        "get_services": {
+            "get_shipment_with_transportation_orders": "/shipment/api/shipment/shipment/shipmentWithTranportationOrders",
+            "get_stop_action": "/shipment/api/shipment/stopAction",
+            "get_stop_status": "/shipment/api/shipment/stopStatus"
+        },
+        "import_services": {
+            "import_shipment_with_orders": "/shipment/api/shipment/shipment/importShipmentWithOrders"
+        }
+    },
+    "tsk": {
+        "general_services": {
+            "task_detail": "/task/api/task/taskDetail/",
+            "task_group": "/task/api/task/taskGroup/",
+            "task_path": "/task/api/task/taskPath/",
+            "task_pool": "/task/api/task/taskPool/",
+            "task_zone_prox": "/task/api/task/taskZoneProximity/",
+            "task": "/task/api/task/task/",
+            "travel_zone_proximity": "/task/api/task/task/taskZoneProximity/",
+            "travel_zone_retriction": "/task/api/task/task/travelZoneRestriction/",
+            "travel_zone_usage": "/task/api/task/task/travelZoneUsage/",
+            "tsk_grp_default_behavior": "/task/api/task/task/tskGrpDefaultBehavior/",
+            "user_defaults": "/task/api/task/userDefaults/",
+            "user_metrics": "/task/api/task/userMetrics/",
+            "user_task_group_eligibility": "/task/api/task/userTaskGroupEligibility/",
+            "user_task_pool_eligibility": "/task/api/task/userTaskPoolEligibility/"
+        },
+        "get_services": {
+            "get_task_detail_status": "/task/api/task/taskDetailStatus",
+            "get_task_detail_type": "/task/api/task/taskDetailType",
+            "get_task_status": "/task/api/task/taskStatus"
+        },
+        "search_services": {
+            "search_task_detail_status": "/task/api/task/taskDetailStatus/search",
+            "search_task_detail_type": "/task/api/task/taskDetailType/search",
+            "search_task_status": "/task/api/task/taskStatus/search"
+        },
+        "partial_update_services": {}
+    },
+    "ven": {
+        "general_services": {
+            "vendor_perf_auto_crit": "/vendor/api/vendor/vendorPerfAutoTriggerCriteria/",
+            "vendor_perf_auto_strategy": "/vendor/api/vendor/vendorPerfAutoTriggerStrategy/",
+            "vendor_performance_crit": "/vendor/api/vendor/vendorPerformanceCriteria/",
+            "vendor_performance_strategy": "/vendor/api/vendor/vendorPerformanceStrategy/",
+            "vendor_performance_code": "/vendor/api/vendor/vendorPerformanceCode/",
+            "vendor_performance_group": "/vendor/api/vendor/vendorPerformanceGroup/",
+            "vendor": "/vendor/api/vendor/vendor/"
+        },
+        "search_services": {},
+        "get_services": {},
+        "import_services": {}
+    },
+    "wor": {
+        "general_services": {
+            "search_picking_task_strategy": "/workrelease/api/workrelease/pickingTaskStrategy/search",
+            "search_resource_group": "/workrelease/api/workrelease/resourceGroup/search",
+            "search_task_release_template": "/workrelease/api/workrelease/taskReleaseTemplate/search",
+            "search_work_release_template": "/workrelease/api/workrelease/workReleaseTemplate/search",
+            "search_work_resource": "/workrelease/api/workrelease/workResource/search"
+        },
+        "search_services": {
+            "search_resource_group_capacity_from_cm": "/workrelease/api/workrelease/resourcegroupcapacity/capacityManager",
+            "search_resource_group_capacity_from_tm": "/workrelease/api/workrelease/resourcegroupcapacity/taskReleaseManager",
+            "search_allocation": "/workrelease/api/workrelease/allocation/search",
+            "search_allocation_priority": "/workrelease/api/workrelease/allocationPriority/search",
+            "search_allocation_score": "/workrelease/api/workrelease/allocationScore/search",
+            "search_allocation_status": "/workrelease/api/workrelease/allocationStatus/search",
+            "search_batch": "/workrelease/api/workrelease/batch/search",
+            "search_feedback": "/workrelease/api/workrelease/feedback/search",
+            "search_pack_sort_resource_run": "/workrelease/api/workrelease/packSortResourceRunStrategy/search",
+            "search_picking_task_run": "/workrelease/api/workrelease/pickingTaskRunStrategy/search",
+            "search_task": "/workrelease/api/workrelease/task/search",
+            "search_work": "/workrelease/api/workrelease/work/search",
+            "search_work_release_run_det": "/workrelease/api/workrelease/workReleaseRunDetail/search",
+            "search_work_release_run_sum": "/workrelease/api/workrelease/workReleaseRunSummary/search",
+            "search_work_status": "/workrelease/api/workrelease/workStatus/search",
+            "search_work_visibility": "/workrelease/api/workrelease/workVisibility/search"
+        },
+        "get_services": {
+            "get_allocation": "/workrelease/api/workrelease/allocation",
+            "get_allocation_priority": "/workrelease/api/workrelease/allocationPriority",
+            "get_allocation_score": "/workrelease/api/workrelease/allocationScore",
+            "get_allocation_status": "/workrelease/api/workrelease/allocationStatus",
+            "get_batch": "/workrelease/api/workrelease/batch",
+            "get_feedback": "/workrelease/api/workrelease/feedback",
+            "get_pack_sort_resource_run": "/workrelease/api/workrelease/packSortResourceRunStrategy",
+            "get_picking_task_run": "/workrelease/api/workrelease/pickingTaskRunStrategy",
+            "get_resource_availability": "/workrelease/api/workrelease/resourceAvailability",
+            "get_task": "/workrelease/api/workrelease/task",
+            "get_work": "/workrelease/api/workrelease/work",
+            "get_work_release_run_det": "/workrelease/api/workrelease/workReleaseRunDetail",
+            "get_work_release_run_sum": "/workrelease/api/workrelease/workReleaseRunSummary",
+            "get_work_status": "/workrelease/api/workrelease/workStatus"
+        },
+        "import_services": {}
+    },
+    "wtp": {
+        "general_services": {},
+        "search_services": {
+            "search_metric_metadata": "/wiretap/api/functionalmetrics/metricMetadata/search"
+        },
+        "get_services": {
+            "get_metric_metadata": "/wiretap/api/functionalmetrics/metricMetadata",
+            "get_custom_metrics": "/wiretap/internal/core/custommetrics"
+        },
+        "import_services": {
+            "save_adhoc_query": "/wiretap/api/wiretap/adhocQuery/save",
+            "run_adhoc_query": "/wiretap/api/wiretap/adhocQuery/execute"
+        }
+    },
+    "yms": {
+        "general_services": {
+            "appointment": "/yard-management/api/yard-management/appointment/",
+            "asn": "/yard-management/api/yard-management/asn/",
+            "check_in_trailer_criteria": "/yard-management/api/yard-management/checkInTrailerCriteria/",
+            "check_in_trailer_strategy": "/yard-management/api/yard-management/checkInTrailerStrategy/",
+            "check_out_trailer_criteria": "/yard-management/api/yard-management/checkOutTrailerCriteria/",
+            "check_out_trailer_strategy": "/yard-management/api/yard-management/checkOutTrailerStrategy/",
+            "climate_control": "/yard-management/api/yard-management/climateControl/",
+            "dock_door_rec": "/yard-management/api/yard-management/ymDockDoorRecord/",
+            "driver": "/yard-management/api/yard-management/driver/",
+            "equipment_type": "/yard-management/api/yard-management/equipmentType/",
+            "move_trailer_criteria": "/yard-management/api/yard-management/moveTrailerCriteria/",
+            "move_trailer_strategy": "/yard-management/api/yard-management/moveTrailerStrategy/",
+            "nextup_configuration": "/yard-management/api/yard-management/nextUpConfiguration/",
+            "preference": "/yard-management/api/scoring/preference/",
+            "preference_attribute": "/yard-management/api/scoring/preferenceAttribute/",
+            "preference_type": "/yard-management/api/scoring/preferenceType/",
+            "priority": "/yard-management/api/yard-management/priority/",
+            "produce_class": "/yard-management/api/yard-management/productClass/",
+            "purchase_order": "/yard-management/api/yard-management/purchaseOrder/",
+            "shipment_stop": "/yard-management/api/yard-management/shipmentStop/",
+            "trailer_activity": "/yard-management/api/yard-management/trailerActivity/",
+            "trailer_condition": "/yard-management/api/yard-management/trailerCondition/",
+            "trailer_condition_code": "/yard-management/api/yard-management/trailerConditionCode/",
+            "trailer_header": "/yard-management/api/yard-management/trailerHeader/",
+            "trailer_status": "/yard-management/api/yard-management/trailerStatus/",
+            "visit_type": "/yard-management/api/yard-management/visitType/",
+            "yard_parms": "/yard-management/api/yard-management/yardParameters/",
+            "ym_loc_hdr": "/yard-management/api/yard-management/ymLocationHeader/"
+        },
+        "get_services": {},
+        "search_services": {}
+    }
+}

@@ -4,8 +4,8 @@ Simple test to verify generation template processing
 """
 
 try:
-    from template_generator import TemplateGenerator
-    from data_generator import DataGenerator
+    from data_creation.template_generator import TemplateGenerator
+    from data_creation.data_generator import DataGenerator
     import json
     
     print("=== Generation Template Test ===")

@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(__file__))
 
-from template_functions import generate_random_value
+from data_creation.template_functions import generate_random_value
 
 def test_whitespace_handling():
     """Test that all field type patterns handle whitespace correctly"""

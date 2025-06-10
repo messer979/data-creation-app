@@ -5,8 +5,8 @@ Test script to verify generation template processing functionality
 
 import json
 import os
-from template_generator import TemplateGenerator
-from data_generator import DataGenerator
+from data_creation.template_generator import TemplateGenerator
+from data_creation.data_generator import DataGenerator
 
 def test_generation_template_processing():
     """Test if generation templates are processed correctly"""

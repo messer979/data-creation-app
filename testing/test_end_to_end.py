@@ -7,8 +7,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from data_generator import DataGenerator
-from config_manager import ConfigurationManager
+from data_creation.data_generator import DataGenerator
+from components.config_manager import ConfigurationManager
 
 def test_end_to_end_payload_wrapping():
     """Test the complete flow from data generation to API payload wrapping"""
