@@ -64,10 +64,9 @@ def main():
         # Render the bulk template manager UI which will handle the template manager page
         render_bulk_template_manager_ui(st.session_state.data_gen)
         return  # Exit early to avoid rendering main content
-    
-    # Main content area (single column layout)
+      # Main content area (single column layout)
     # Template selection
-    template_options = list(st.session_state.data_gen.templates.keys())
+    template_options = sorted(list(st.session_state.data_gen.get_template_generator().get_available_templates()))
     selected_template = render_template_selection(template_options)
     
     if not selected_template:
