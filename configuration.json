@@ -2,13 +2,13 @@
   "description": "Template to endpoint mapping configuration",
   "version": "1.0",
   "base_url": "https://tests.sc.ma.co",
-  "default_headers": {
+  "headers": {
     "Content-Type": "application/json",
     "Authorization": "Bearer YOUR_SHARED_TOKEN",
     "SelectedOrganization":"organization",
     "SelectedLocation":"facility"
   },
-  "default_endpoints": {
+  "endpoints": {
     "facility": {
       "endpoint": "/xint/api/async/outbound/send?messageType=ANY_FAC_ImportFacilities",
       "method": "POST",

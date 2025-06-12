@@ -12,18 +12,10 @@ from datetime import datetime
 from typing import List, Dict, Any
 from config import TEMPLATE_DEFAULTS, MAX_RECORDS, DEFAULT_RECORD_COUNT, DEFAULT_BATCH_SIZE, MAX_BATCH_SIZE
 from data_creation.api_operations import display_api_results
-from components.endpoint_config_ui import render_endpoint_configuration_sidebar
 from components.template_guide_modal import guide_modal
 from templates.bulk_template_manager import BulkTemplateManager
 
 
-
-
-def render_endpoint_config_sidebar(config_manager):
-    """
-    Render the endpoint configuration sidebar
-    """
-    render_endpoint_configuration_sidebar(config_manager)
 
 
 def render_template_selection(template_options: List[str]) -> str:

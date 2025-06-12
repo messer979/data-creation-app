@@ -13,10 +13,8 @@ Refactored version with separated concerns:
 
 import streamlit as st
 from data_creation.data_generator import DataGenerator
-from config import PAGE_CONFIG
-from components.config_manager import ConfigurationManager
+from config import PAGE_CONFIG, load_initial_config_to_session
 from components.app_components import (
-    render_endpoint_config_sidebar, 
     render_template_selection, 
     render_count_input,
     render_api_options,
@@ -26,7 +24,7 @@ from components.app_components import (
 )
 from components.sidebar import render_sidebar
 from data_creation.data_operations import handle_generate_button_click
-from components.endpoint_config_ui import render_endpoint_configuration_sidebar
+import json
 
 # Page configuration
 st.set_page_config(**PAGE_CONFIG)
@@ -36,9 +34,8 @@ dev_config_file = 'user_config.json'
 if 'data_gen' not in st.session_state:
     st.session_state.data_gen = DataGenerator()
 
-if 'config_manager' not in st.session_state:
-    st.session_state.config_manager = ConfigurationManager()
-
+# Load config into session state at startup
+load_initial_config_to_session()
 
 def main():
     """Main Streamlit application with separated concerns"""
@@ -55,9 +52,6 @@ def main():
     except TypeError:
         st.session_state.ace_theme = "github"    # Render sidebar configuration
     render_sidebar()
-    render_endpoint_config_sidebar(
-        st.session_state.config_manager
-    )
     
     # Check if we should show the template manager page instead of main content
     if st.session_state.get('show_template_manager_page', False):
@@ -98,7 +92,6 @@ def main():
             count=count,
             template_params={},  # Empty dict since we removed template options
             send_to_api=send_to_api,
-            config_manager=st.session_state.config_manager,
             batch_size=batch_size,
             template_editor_result=template_editor_result
         )

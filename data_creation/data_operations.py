@@ -5,13 +5,11 @@ Data generation operations and business logic
 import streamlit as st
 from typing import List, Dict, Any
 from data_creation.api_operations import send_data_to_api
-from components.config_manager import ConfigurationManager
 
 def handle_generate_button_click(selected_template: str,
                                 count: int,
                                 template_params: Dict[str, Any],
                                 send_to_api: bool,
-                                config_manager: ConfigurationManager,
                                 batch_size: int,
                                 template_editor_result: Dict[str, Any] = None) -> bool:
     """
@@ -22,7 +20,6 @@ def handle_generate_button_click(selected_template: str,
         count: Number of records to generate
         template_params: Template-specific parameters
         send_to_api: Whether to send data to API
-        config_manager: Configuration manager for endpoints        
         batch_size: Batch size for API calls
         template_editor_result: Result from template editor with edited template and validation status
     
@@ -68,15 +65,22 @@ def handle_generate_button_click(selected_template: str,
             st.success(f"✅ Generated {len(generated_data)} records!")
               # Send to API if requested
             if send_to_api:
-                # Get template-specific endpoint, headers, and configuration
-                api_endpoint = config_manager.get_endpoint_for_template(selected_template)
-                api_headers = config_manager.get_headers_for_template(selected_template)
-                template_config = config_manager.get_template_config(selected_template)
-                
+                # Get template-specific endpoint, headers, and configuration from session_state
+                endpoints = st.session_state.get('user_endpoint_config', {})
+                template_config = endpoints.get(selected_template, {})
+                base_url = st.session_state.get('base_url', '')
+                api_endpoint = base_url + template_config.get('endpoint', '/data')
+                # Build headers
+                headers = {
+                    'Authorization': st.session_state.get('shared_token', ''),
+                    'SelectedOrganization': st.session_state.get('selected_organization', ''),
+                    'SelectedLocation': st.session_state.get('selected_location', ''),
+                    'Content-Type': 'application/json'
+                }
                 api_results = send_data_to_api(
                     generated_data, 
                     api_endpoint, 
-                    api_headers,
+                    headers,
                     batch_size,
                     template_config
                 )
